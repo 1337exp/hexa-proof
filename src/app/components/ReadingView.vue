@@ -69,8 +69,8 @@ function setMode(value: string | number | boolean): void {
                         <TaoSegmentedOption value="all">{{ t('reading.modeAll') }}</TaoSegmentedOption>
                     </TaoSegmented>
                     <TaoButton variant="ghost" tone="neutral" icon="tao-info" :aria-label="t('reading.modeHelp')" :title="t('reading.modeHelp')" @click="openAbout('about-rules')" />
+                    <TaoButton variant="ghost" tone="neutral" icon="tao-copy" :aria-label="t('reading.copyText')" :title="t('reading.copyText')" :disabled="!pack" @click="void copy('book')" />
                 </div>
-                <TaoButton variant="ghost" tone="neutral" icon="tao-copy" :aria-label="t('reading.copyText')" :title="t('reading.copyText')" :disabled="!pack" @click="void copy('book')" />
             </div>
             <p class="reading__rule">{{ t(`reading.rule.${reading.rule}`) }}</p>
         </div>
@@ -98,7 +98,7 @@ function setMode(value: string | number | boolean): void {
 .reading__titlebar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start; /* the icon stands right after the word, a wide screen does not take it away */
     gap: var(--tao-space-2);
 }
 .reading__title {
@@ -174,7 +174,7 @@ function setMode(value: string | number | boolean): void {
 .reading__modebar {
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: var(--tao-space-3);
 }
 .reading__rule {

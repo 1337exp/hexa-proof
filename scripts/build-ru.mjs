@@ -50,7 +50,7 @@ for (const { where, from, to, note } of overrides.fixes ?? []) {
     const target = position ? hexagram?.lines[position - 1] : hexagram?.judgment;
     if (!target?.text.includes(from)) throw new Error(`overrides.fixes ${where}: the words «${from}» are not there`);
     target.text = target.text.replace(from, to);
-    target.note = note;
+    if (note) target.note = note; // a slip of typing is mended without a note: the note is for a change of meaning
 }
 
 // The one place where the source has no words at all (9.2) is filled by us from the Chinese and Legge, and the note says so.
@@ -61,6 +61,14 @@ for (const { where, text, note } of overrides.fills ?? []) {
     if (!line || line.text) throw new Error(`overrides.fills ${where}: the line is missing or already has words`);
     line.text = text;
     line.note = note;
+}
+
+// A space before a comma, a semicolon or a colon is a slip of the typing of the source («Но , как»): taken out of the commentary.
+// Пробел перед запятой, точкой с запятой или двоеточием это огрех набора источника: убран из толкования.
+const unspace = (text) => text?.replace(/\s+([,;:])(?=\s)/g, '$1');
+for (const h of hexagrams) {
+    if (h.judgment?.comment) h.judgment.comment = unspace(h.judgment.comment);
+    for (const line of h.lines) if (line.comment) line.comment = unspace(line.comment);
 }
 
 const pack = {

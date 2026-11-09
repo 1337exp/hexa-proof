@@ -166,6 +166,17 @@ describe('what the review of the packs found', () => {
         expect(noted).toHaveLength(5); // the four mended places and the one filled
     });
 
+    it('has no slips of typing in the words of the classic: a wrong person, a missing space, a stray colon', () => {
+        expect(ru.hexagrams[9]!.lines[1]!.text).toContain('Путь, по которому ты ступаешь');
+        expect(ru.hexagrams[9]!.lines[3]!.text).toContain('тигра: ох-ох!');
+        expect(ru.hexagrams[15]!.lines[1]!.text).toContain('чем камень. Не до конца дня');
+        const all = ru.hexagrams.flatMap((h) => [h.judgment?.text, ...h.lines.map((l) => l.text)]).filter(Boolean) as string[];
+        expect(all.filter((t) => /[,;:!?][A-Za-zА-Яа-яЁё]|\s[,;:]\s|\.:/.test(t))).toEqual([]);
+        expect(all.filter((t) => /мы\s+[а-яё]+(ешь|ишь)/i.test(t))).toEqual([]);
+        const comments = ru.hexagrams.flatMap((h) => [h.judgment?.comment, ...h.lines.map((l) => l.comment)]).filter(Boolean) as string[];
+        expect(comments.filter((t) => /\s[,;:](\s|$)/.test(t))).toEqual([]);
+    });
+
     it('fills the one empty line of the source (9.2) from the Chinese and Legge, and says so', () => {
         const line = ru.hexagrams[8]!.lines[1]!;
         expect(line.text).toBe('Тебя влекут к возвращению на собственный путь. Счастье.');
