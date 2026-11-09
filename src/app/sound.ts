@@ -113,6 +113,9 @@ export function unlockSound(): void {
     }
 }
 
+/** The sounds that are playing now, so that they can be stopped. / Звуки, что играют сейчас, чтобы их можно было остановить. */
+const playing = new Set<{ source: AudioBufferSourceNode; gain: GainNode }>();
+
 function play(name: Name, rate = 1): void {
     const ctx = context;
     const buffer = buffers.get(name);
@@ -138,7 +141,31 @@ function play(name: Name, rate = 1): void {
     } else {
         source.connect(gain).connect(ctx.destination);
     }
+    const voice = { source, gain };
+    playing.add(voice);
+    source.onended = () => playing.delete(voice);
     source.start();
+}
+
+/**
+ * Stops what is playing (the long taiko of a cast that is thrown away, say): not at once, which clicks, but fading out in about a tenth of a second.
+ * Останавливает то, что играет (например, долгое тайко брошенного и отменённого гадания): не сразу, это щёлкает, а затухая за десятую долю секунды.
+ */
+export function stopSounds(): void {
+    const ctx = context;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    for (const { source, gain } of playing) {
+        try {
+            const param = gain.gain;
+            if (typeof param.cancelAndHoldAtTime === 'function') param.cancelAndHoldAtTime(now);
+            else param.cancelScheduledValues(now);
+            param.setTargetAtTime(0, now, 0.03);
+            source.stop(now + 0.2);
+        } catch {
+            // it had already stopped
+        }
+    }
 }
 
 /**

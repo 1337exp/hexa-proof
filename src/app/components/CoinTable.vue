@@ -2,7 +2,7 @@
 import { TaoButton } from '@1337exp/taoui';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { t } from '../i18n';
-import { playFlip, playTaiko, prepareSound, setSound, soundOn } from '../sound';
+import { playFlip, playTaiko, prepareSound, setSound, soundOn, stopSounds } from '../sound';
 import type { Coins } from '../../core/cast';
 import type { TableStage } from '../../scene/TableStage';
 
@@ -47,6 +47,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+    stopSounds(); // the table is going away: so is its sound
     settle(null);
     stage?.dispose();
     stage = null;

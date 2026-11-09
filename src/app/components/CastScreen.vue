@@ -5,7 +5,7 @@ import { primaryOf } from '../../core/hexagram';
 import type { LineValue } from '../../core/types';
 import { t } from '../i18n';
 import { cast, question, reset as resetThrows, throwNext, throws } from '../session';
-import { unlockSound } from '../sound';
+import { stopSounds, unlockSound } from '../sound';
 import CoinFace from './CoinFace.vue';
 import CoinTable from './CoinTable.vue';
 import HexagramFigure from './HexagramFigure.vue';
@@ -69,6 +69,7 @@ async function startOver(): Promise<void> {
     const sure = await confirm().title(t('cast.resetTitle')).message(t('cast.resetMessage')).ok(t('cast.resetOk')).cancel(t('cast.resetKeep')).danger();
     if (!sure) return;
     cancelled = true;
+    stopSounds(); // the taiko of the cast that is thrown away must not play on
     resetThrows();
     revealed.value = 0;
     busy.value = false;
