@@ -5,6 +5,7 @@ import { changingPositions, primaryOf, relatingOf } from '../../core/hexagram';
 import { readCast, type ReadingMode } from '../../core/reading';
 import type { Cast } from '../../core/types';
 import { t } from '../i18n';
+import { openAbout } from '../nav';
 import { bookText, castText } from '../share';
 import { pack } from '../texts';
 import HexagramHead from './HexagramHead.vue';
@@ -62,10 +63,13 @@ function setMode(value: string | number | boolean): void {
 
         <div class="reading__mode">
             <div class="reading__modebar">
-                <TaoSegmented :model-value="mode" :legend="t('reading.modeLabel')" @update:model-value="setMode">
-                    <TaoSegmentedOption value="classic">{{ t('reading.modeClassic') }}</TaoSegmentedOption>
-                    <TaoSegmentedOption value="all">{{ t('reading.modeAll') }}</TaoSegmentedOption>
-                </TaoSegmented>
+                <div class="reading__switch">
+                    <TaoSegmented :model-value="mode" :legend="t('reading.modeLabel')" @update:model-value="setMode">
+                        <TaoSegmentedOption value="classic">{{ t('reading.modeClassic') }}</TaoSegmentedOption>
+                        <TaoSegmentedOption value="all">{{ t('reading.modeAll') }}</TaoSegmentedOption>
+                    </TaoSegmented>
+                    <TaoButton variant="ghost" tone="neutral" icon="tao-info" :aria-label="t('reading.modeHelp')" :title="t('reading.modeHelp')" @click="openAbout('about-rules')" />
+                </div>
                 <TaoButton variant="ghost" tone="neutral" icon="tao-copy" :aria-label="t('reading.copyText')" :title="t('reading.copyText')" :disabled="!pack" @click="void copy('book')" />
             </div>
             <p class="reading__rule">{{ t(`reading.rule.${reading.rule}`) }}</p>
@@ -161,6 +165,11 @@ function setMode(value: string | number | boolean): void {
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+}
+.reading__switch {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--tao-space-1);
 }
 .reading__modebar {
     display: flex;

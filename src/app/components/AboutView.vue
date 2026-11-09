@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { TaoAlert, TaoSpoiler } from '@1337exp/taoui';
+import { nextTick, onMounted } from 'vue';
 import { t } from '../i18n';
+import { anchor } from '../nav';
 import { pack } from '../texts';
+
+/** Opened from a help icon: scroll to the block that was asked for. / Открыто по значку помощи: прокрутить к нужному блоку. */
+onMounted(async () => {
+    const id = anchor.value;
+    anchor.value = null;
+    if (!id) return;
+    await nextTick();
+    document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+});
 
 const RULES = ['none', 'one', 'two', 'three', 'four', 'five', 'six'] as const;
 </script>
@@ -20,8 +31,9 @@ const RULES = ['none', 'one', 'two', 'three', 'four', 'five', 'six'] as const;
             <p>{{ t('about.marksText') }}</p>
         </div>
 
-        <div class="about__block">
+        <div id="about-rules" class="about__block">
             <h3>{{ t('about.rules') }}</h3>
+            <p>{{ t('about.modesText') }}</p>
             <ul>
                 <li v-for="rule in RULES" :key="rule">{{ t(`reading.rule.${rule}`) }}</li>
             </ul>

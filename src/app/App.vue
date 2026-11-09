@@ -9,12 +9,12 @@ import ReadingView from './components/ReadingView.vue';
 import { i18n, locale, t } from './i18n';
 import { addEntry, entries, removeEntry, startJournal } from './journal';
 import { cast, question, readingMode, reset, setReadingMode } from './session';
+import { view } from './nav';
 import { startPackLoading } from './texts';
 import { computed } from 'vue';
 
 type View = 'cast' | 'journal' | 'library' | 'about';
 
-const view = ref<View>('cast');
 const reading = ref(false);
 
 /** The three working sections are the tiles; the book is a quiet link in the top row. / Три рабочих раздела это плитки; книга это тихая ссылка в верхнем ряду. */

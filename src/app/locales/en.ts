@@ -48,6 +48,7 @@ export const en = {
         modeLabel: 'What to read',
         modeClassic: 'The rule of Zhu Xi',
         modeAll: 'Everything',
+        modeHelp: 'What are these two ways?',
         ruleTitle: 'Why these places',
         again: 'Cast again',
         againTitle: 'Cast again?',
@@ -78,7 +79,7 @@ export const en = {
         lineOf: 'Line {0} of «{1}»',
         useAllNine: 'When all the lines are strong',
         useAllSix: 'When all the lines are weak',
-        main: 'weighs most',
+        main: 'weighs more',
         comment: 'Commentary',
         gap: 'This edition gives no words for this line; only the commentary.',
         yang: 'solid line',
@@ -103,6 +104,8 @@ export const en = {
         marksText:
             'Most lines are quiet: they stay as they are. Some are old, ripe, and about to turn into their opposite; they carry a mark at the right edge of the figure. A circle (○) is an old solid line: it is full, and it is about to break in two. A cross (×) is an old broken line: it is about to close into one. There are usually one or two such lines in a cast, and sometimes none. When there are, the cast has a second hexagram, the same figure with these lines turned over: the first one tells where you are, the second where it leads.',
         rules: 'How the places are chosen',
+        modesText:
+            'There are two ways to choose what to read. The rule of Zhu Xi (12th century) is the common one and keeps the reading short: it picks the place that matters most for the number of changing lines. Everything shows all that the cast points at: the judgment, every changing line, and the judgment of the second hexagram. The switch is above the text of the answer.',
         sources: 'The books',
         sourceEn: 'English: James Legge, The Yî King (1882, public domain). The verdict, the lines and the image of every hexagram.',
         sourceRu: 'Russian: Yu. K. Shchutsky, The Chinese Classical Book of Changes. His explanation of the figure and of every line, with the classic words inside it.',
