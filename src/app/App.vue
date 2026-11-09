@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { confirm, TaoButton, TaoSegmented, TaoSegmentedOption, TaoTag, TaoThemeToggle, toast } from '@1337exp/taoui';
+import { confirm, TaoButton, TaoSegmented, TaoSegmentedOption, TaoTag, TaoThemeToggle } from '@1337exp/taoui';
 import { onMounted, ref } from 'vue';
 import AboutView from './components/AboutView.vue';
 import JournalView from './components/JournalView.vue';
@@ -7,7 +7,7 @@ import CastScreen from './components/CastScreen.vue';
 import LibraryView from './components/LibraryView.vue';
 import ReadingView from './components/ReadingView.vue';
 import { i18n, locale, t } from './i18n';
-import { addEntry, entries, removeEntry, startJournal } from './journal';
+import { addEntry, entries, removeEntryWithUndo, startJournal } from './journal';
 import { cast, question, readingMode, reset, setReadingMode } from './session';
 import { answer as reading, setAnswer, showView, view, type View } from './nav';
 import { startPackLoading } from './texts';
@@ -53,11 +53,9 @@ function startOver(): void {
     setAnswer(false);
 }
 
-async function remove(): Promise<void> {
+function remove(): void {
     if (!savedId.value) return;
-    if (!(await confirm().title(t('journal.deleteTitle')).message(t('journal.deleteMessage')).ok(t('journal.delete')).danger())) return;
-    removeEntry(savedId.value);
-    toast().success().message(t('journal.removed'));
+    removeEntryWithUndo(savedId.value); // the toast offers to take it back
     startOver();
 }
 
@@ -108,7 +106,7 @@ onMounted(() => {
                         <div class="app__row">
                             <TaoTag v-if="saved" tone="success" flat>{{ t('journal.saved') }}</TaoTag>
                             <TaoButton v-else variant="primary" @click="save()">{{ t('journal.save') }}</TaoButton>
-                            <TaoButton v-if="saved" variant="ghost" tone="danger" @click="void remove()">{{ t('journal.remove') }}</TaoButton>
+                            <TaoButton v-if="saved" variant="ghost" tone="danger" @click="remove()">{{ t('journal.remove') }}</TaoButton>
                         </div>
                         <TaoButton variant="secondary" @click="void again()">{{ t('reading.again') }}</TaoButton>
                     </template>

@@ -5,7 +5,7 @@ import { TaoxSwipeRow } from '@1337exp/taoux/swiperow';
 import { computed, ref } from 'vue';
 import { primaryOf, relatingOf } from '../../core/hexagram';
 import { MAX_NOTE } from '../../core/journal';
-import { clearEntries, exportJournal, entries, importJournal, removeEntry, setNote } from '../journal';
+import { clearEntries, exportJournal, entries, importJournal, removeEntryWithUndo, setNote } from '../journal';
 import { locale, t } from '../i18n';
 import { entry as openId, setEntry } from '../nav';
 import { readingMode, setReadingMode } from '../session';
@@ -30,12 +30,11 @@ function title(cast: (typeof entries.value)[number]['cast']): string {
     return relating ? `${name(primary.number)} → ${name(relating.number)}` : name(primary.number);
 }
 
-async function remove(id: string): Promise<void> {
-    const sure = await confirm().title(t('journal.deleteTitle')).message(t('journal.deleteMessage')).ok(t('journal.delete')).danger();
-    swiped.value = null; // the row closes whatever the answer was
-    if (!sure) return;
-    removeEntry(id);
-    setEntry(null);
+/** No question: the deletion is undone by the button of the toast. / Без вопроса: удаление отменяется кнопкой тоста. */
+function remove(id: string): void {
+    swiped.value = null;
+    removeEntryWithUndo(id);
+    if (openId.value === id) setEntry(null);
 }
 
 async function clear(): Promise<void> {
@@ -71,7 +70,7 @@ async function onPick(event: Event): Promise<void> {
                     :end="[{ id: 'delete', label: t('journal.delete'), icon: 'tao-trash', tone: 'danger' }]"
                     :open="swiped === entry.id"
                     @update:open="(open: boolean) => (swiped = open ? entry.id : null)"
-                    @action="void remove(entry.id)"
+                    @action="remove(entry.id)"
                 >
                     <div class="journal__row">
                         <button type="button" class="journal__item" @click="setEntry(entry.id)">
@@ -82,7 +81,7 @@ async function onPick(event: Event): Promise<void> {
                                 <small class="journal__date">{{ formatDate(entry.date) }}</small>
                             </span>
                         </button>
-                        <button type="button" class="journal__cross" :aria-label="t('journal.deleteEntry')" :title="t('journal.deleteEntry')" @click="void remove(entry.id)">
+                        <button type="button" class="journal__cross" :aria-label="t('journal.deleteEntry')" :title="t('journal.deleteEntry')" @click="remove(entry.id)">
                             <TaoIcon name="tao-close" />
                         </button>
                     </div>
@@ -99,7 +98,7 @@ async function onPick(event: Event): Promise<void> {
 
         <ReadingView :cast="current.cast" :question="current.question" :mode="readingMode" @update:mode="setReadingMode">
             <template #actions>
-                <TaoButton variant="ghost" tone="danger" @click="void remove(current.id)">{{ t('journal.delete') }}</TaoButton>
+                <TaoButton variant="ghost" tone="danger" @click="remove(current.id)">{{ t('journal.delete') }}</TaoButton>
             </template>
         </ReadingView>
 

@@ -53,6 +53,27 @@ export function setNote(id: string, note: string): void {
     persist();
 }
 
+/**
+ * Deletes a reading at once and offers to take it back for a few seconds: no question is asked before, as the deletion is easy to undo.
+ * The reading comes back whole, with its note, to its place by date.
+ * Удаляет запись сразу и на несколько секунд предлагает вернуть её: перед этим ничего не спрашивается, ведь удаление легко отменить.
+ * Запись возвращается целой, с заметкой, на своё место по дате.
+ */
+export function removeEntryWithUndo(id: string): void {
+    const gone = entries.value.find((entry) => entry.id === id);
+    if (!gone) return;
+    removeEntry(id);
+    toast()
+        .info()
+        .timeout(8000)
+        .message(t('journal.removed'))
+        .action(t('journal.undo'), () => {
+            if (entries.value.some((entry) => entry.id === gone.id)) return;
+            entries.value = mergeEntries(entries.value, [gone]).entries;
+            persist();
+        });
+}
+
 export function removeEntry(id: string): void {
     entries.value = entries.value.filter((entry) => entry.id !== id);
     persist();
