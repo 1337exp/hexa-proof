@@ -44,7 +44,7 @@ defineExpose({
 .coin-table {
     position: relative;
     width: 100%;
-    height: clamp(260px, 46vw, 400px);
+    height: clamp(300px, 54vw, 420px);
     border-radius: var(--tao-radius-panel);
     overflow: hidden;
     background: #0e0907;

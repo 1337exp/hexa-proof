@@ -44,9 +44,9 @@ const LANDING = [new Vector3(-1.1, 0, -0.9), new Vector3(1.1, 0, -0.9), new Vect
 /** Where the coins of a throw appear: in front, at the edge of the felt. / Где появляются монеты броска: впереди, у края войлока. */
 const HOME = [new Vector3(-1.5, 0, 3.2), new Vector3(0, 0, 3.4), new Vector3(1.5, 0, 3.2)];
 /** A throw leaves a column of three small coins, one under another; the columns stand three on the left and three on the right. / Бросок оставляет столбик из трёх маленьких монет. */
-const PARK_SCALE = 0.6;
+const PARK_SCALE = 0.66;
 const COLUMN_Z = [-1.45, 0.05, 1.55];
-const COLUMN_X = [2.8, 4.2, 5.6]; // from the middle outwards; the first throw goes to the outermost place
+const COLUMN_X = [2.75, 4.15, 5.55]; // from the middle outwards; the first throw goes to the outermost place
 /** The coins of six throws. / Монеты шести бросков. */
 const THROWS = 6;
 
@@ -92,7 +92,7 @@ export interface TableStageOptions {
 
 export class TableStage {
     /** The speed of the time of the toss: 1 is real time, 0 stops it (for the laboratory). / Скорость времени броска. */
-    speed = 1;
+    speed = 1.25;
 
     /** Full turns of the coins in the air; the look of the toss can be tuned with it. / Полных оборотов монет в воздухе. */
     turns = 2;
@@ -255,7 +255,7 @@ export class TableStage {
         this.camera.aspect = aspect;
         this.aspect = aspect;
         const tan = Math.tan((this.camera.fov * Math.PI) / 360);
-        const distance = Math.max(8.8, 6.7 / (tan * aspect), 5.2 / tan);
+        const distance = Math.max(8.8, 6.45 / (tan * aspect), 5.2 / tan);
         const direction = new Vector3(0, 0.82, 0.57).normalize();
         this.cameraBase.copy(this.target).addScaledVector(direction, distance);
         this.camera.position.copy(this.cameraBase);
