@@ -120,17 +120,17 @@ export interface StageTuning {
 export const DEFAULT_TUNING: Readonly<StageTuning> = {
     lamp: 150,
     exposure: 0.95,
-    vignette: 0.85,
+    vignette: 0.5,
     vignetteSoftness: 0.62,
-    bloomStrength: 1.8,
-    bloomThreshold: 0.85,
-    bloomRadius: 0.35,
+    bloomStrength: 0.55,
+    bloomThreshold: 0.5,
+    bloomRadius: 0.1,
     glowPower: 5,
-    glowPulse: 0.75,
+    glowPulse: 1.5,
     glowWave: 0.95,
     shake: 1,
-    flash: 1,
-    ring: 1,
+    flash: 0.2,
+    ring: 0.8,
 };
 
 export interface TableStageOptions {
@@ -140,7 +140,7 @@ export interface TableStageOptions {
 
 export class TableStage {
     /** The speed of the time of the toss: 1 is real time, 0 stops it (for the laboratory). / Скорость времени броска. */
-    speed = 1.35;
+    speed = 1.5;
 
     /** Full turns of the coins in the air; the look of the toss can be tuned with it. / Полных оборотов монет в воздухе. */
     turns = 2;
