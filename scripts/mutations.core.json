@@ -1,0 +1,22 @@
+[
+ ["isYang forgets old yang", "src/core/hexagram.ts", "value === 7 || value === 9;", "value === 7;"],
+ ["isChanging forgets old yang", "src/core/hexagram.ts", "value === 6 || value === 9;", "value === 6;"],
+ ["relating does not flip", "src/core/hexagram.ts", "isYang(value) !== isChanging(value)", "isYang(value)"],
+ ["changing positions from 0", "src/core/hexagram.ts", "[index + 1]", "[index]"],
+ ["hexagram number off by one", "src/core/hexagram.ts", "HEXAGRAMS[number - 1]", "HEXAGRAMS[number]"],
+ ["trigrams swapped", "src/core/hexagram.ts", "{ lower: trigramByLines(lines.slice(0, 3)), upper: trigramByLines(lines.slice(3)) }", "{ lower: trigramByLines(lines.slice(3)), upper: trigramByLines(lines.slice(0, 3)) }"],
+ ["castLines inverted", "src/core/hexagram.ts", "(isYang(value) ? '1' : '0')", "(isYang(value) ? '0' : '1')"],
+ ["inverse keeps lines", "src/core/hexagram.ts", "line === '1' ? '0' : '1')).join('')", "line === '1' ? '1' : '0')).join('')"],
+ ["reversed not reversed", "src/core/hexagram.ts", ".reverse()", ""],
+ ["coin chance 0.4", "src/core/cast.ts", "random() < 0.5 ? 2 : 3", "random() < 0.4 ? 2 : 3"],
+ ["value sums two coins", "src/core/cast.ts", "coins[0] + coins[1] + coins[2]", "coins[0] + coins[1]"],
+ ["cast needs seven throws", "src/core/cast.ts", "throws.length !== 6", "throws.length !== 7"],
+ ["isCast refuses 9", "src/core/cast.ts", "value === 7 || value === 8 || value === 9)", "value === 7 || value === 8)"],
+ ["two lines: lower is main", "src/core/reading.ts", "rule: 'two', passages: changing.map((position) => line(primary, position)), main: 1", "rule: 'two', passages: changing.map((position) => line(primary, position)), main: 0"],
+ ["three: no relating verdict", "src/core/reading.ts", "[judgment(primary), judgment(relating!)], main: 0 };\n        case 4", "[judgment(primary)], main: 0 };\n        case 4"],
+ ["four: reads the changing lines", "src/core/reading.ts", "resting(changing).map((position) => line(relating!, position))", "changing.map((position) => line(relating!, position))"],
+ ["five: reads a changing line", "src/core/reading.ts", "line(relating!, resting(changing)[0]!)", "line(relating!, changing[0]!)"],
+ ["six: primary verdict", "src/core/reading.ts", "return { ...base, rule: 'six', passages: [judgment(relating!)]", "return { ...base, rule: 'six', passages: [judgment(primary)]"],
+ ["sixWhole only for 1", "src/core/reading.ts", "if (primary === 1 || primary === 2) return { ...base, rule: 'sixWhole'", "if (primary === 1) return { ...base, rule: 'sixWhole'"],
+ ["all: no useAll", "src/core/reading.ts", "if (changing.length === 6 && (primary === 1 || primary === 2)) passages.push", "if (false) passages.push"]
+]
