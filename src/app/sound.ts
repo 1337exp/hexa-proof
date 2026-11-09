@@ -32,7 +32,7 @@ const URLS: Record<Name, string> = {
     taiko: new URL('../assets/sound/taiko.mp3', import.meta.url).href,
 };
 /** How loud each one is, 0…1: from the lowest to the highest, a random one in between at every play, so the flips do not tire. / Громкость каждого, от 0 до 1: на каждый раз случайная между меньшей и большей, чтобы щелчки не надоедали. */
-const VOLUME: Record<Name, readonly [number, number]> = { flip: [0.03, 0.05], taiko: [0.25, 0.25] };
+const VOLUME: Record<Name, readonly [number, number]> = { flip: [0.07, 0.1], taiko: [0.25, 0.25] };
 const SAMPLE_RATE = 44100;
 /**
  * How a sound is softened. The flip begins with a ringing knock (the first 0.15 s of the recording) and ends with the clink of the landing: only
@@ -43,6 +43,8 @@ const SAMPLE_RATE = 44100;
  */
 const SOFTEN: Partial<Record<Name, { start: number; hold: number; back: number; lowpass: number }>> = {
     flip: { start: 0.25, hold: 0.3, back: 0.6, lowpass: 4500 },
+    // the taiko swells instead of hitting at once: it begins quiet and grows to its level in a third of a second
+    taiko: { start: 0.15, hold: 0.05, back: 0.4, lowpass: 5000 },
 };
 
 let context: AudioContext | null = null;
