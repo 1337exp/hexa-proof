@@ -37,6 +37,7 @@ import { createCoinGeometry } from './coinGeometry';
 import coinBackUrl from './assets/coin_back.webp';
 import coinFrontUrl from './assets/coin_front.webp';
 import tableUrl from './assets/table.webp';
+import { createSparks, type Sparks } from './sparks';
 import { coinFaceTexture, rimTexture, ringTexture } from './textures';
 import { COIN_THICKNESS, flatQuaternion, newPose, planToss, upSide, yawOf, type CoinPose, type TossPlan } from './tossPlan';
 
@@ -115,6 +116,8 @@ export interface StageTuning {
     shake: number;
     flash: number;
     ring: number;
+    /** How strong the soft sparks over the table are, 0 (none) to 1. / Сила мягких искорок над столом, от 0 (нет) до 1. */
+    sparks: number;
 }
 
 export const DEFAULT_TUNING: Readonly<StageTuning> = {
@@ -131,6 +134,7 @@ export const DEFAULT_TUNING: Readonly<StageTuning> = {
     shake: 0,
     flash: 0.2,
     ring: 0.8,
+    sparks: 0.55,
 };
 
 export interface TableStageOptions {
@@ -182,6 +186,10 @@ export class TableStage {
     private readonly waves: { mesh: Mesh<PlaneGeometry, MeshBasicMaterial>; age: number; strength: number }[] = [];
 
     private readonly onGlow?: () => void;
+    private sparks!: Sparks;
+    private sparkTime = 0;
+    /** A person who asked for less motion gets no sparks. / Кто просил меньше движения, искорок не видит. */
+    private readonly calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     constructor(container: HTMLElement, options: TableStageOptions = {}) {
         this.onGlow = options.onGlow;
@@ -287,6 +295,8 @@ export class TableStage {
         scene.add(this.flash);
         this.ringMap = ringTexture();
         this.textures.push(this.ringMap);
+        this.sparks = createSparks();
+        scene.add(this.sparks.points);
 
         // The table is a picture: it is the background of the whole frame, and the plane under the coins is invisible, it only takes their shadows.
         // Стол это картинка: она фон всего кадра, а плоскость под монетами невидима и только принимает их тени.
@@ -599,6 +609,8 @@ export class TableStage {
             state.mesh.scale.copy(state.pose.scale).multiplyScalar(state.appear);
         }
         this.animateEffects(dt);
+        this.sparkTime += dt;
+        this.sparks.update(this.sparkTime, this.calm ? 0 : this.tuning.sparks, this.renderer.getPixelRatio());
         this.applyTuning();
         this.animateGlow(scaled);
         if (this.pending) this.completeIfStill();
@@ -620,6 +632,7 @@ export class TableStage {
         this.unbind();
         this.finish();
         this.composer.dispose();
+        this.sparks.dispose();
         disposeObject(this.scene);
         for (const texture of this.textures) texture.dispose();
         this.renderer.dispose();
