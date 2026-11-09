@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { LineValue } from '../../core/types';
 import { t } from '../i18n';
 import { cast, question, reset as resetThrows, throwNext, throws } from '../session';
+import { thud, unlockSound } from '../sound';
 import CoinFace from './CoinFace.vue';
 import CoinTable from './CoinTable.vue';
 import HexagramFigure from './HexagramFigure.vue';
@@ -42,6 +43,7 @@ const tapHint = computed(() => (!busy.value && !done.value && (revealed.value ==
 async function throwOne(): Promise<void> {
     if (busy.value || throws.value.length >= 6) return;
     busy.value = true;
+    unlockSound(); // the throw comes from a press: the browser lets the sound start now
     const next = throwNext();
     if (next) await table.value?.toss(next.coins, reducedMotion());
     revealed.value = throws.value.length;
@@ -97,17 +99,16 @@ const status = computed(() => {
     <section class="cast" aria-labelledby="cast-title">
         <h2 id="cast-title" class="visually-hidden">{{ t('nav.cast') }}</h2>
 
-        <div class="cast__question">
-            <label for="cast-question" class="cast__label">{{ t('cast.questionLabel') }}</label>
-            <TaoTextarea id="cast-question" v-model="question" :rows="2" :maxlength="300" :placeholder="t('cast.questionPlaceholder')" />
-        </div>
-
         <div class="cast__stage">
-            <CoinTable v-if="!flat" ref="table" :hint="tapHint" @activate="activate" @unavailable="flat = true" />
+            <CoinTable v-if="!flat" ref="table" :hint="tapHint" @activate="activate" @impact="thud" @unavailable="flat = true" />
             <div v-else class="cast__flat" aria-live="polite">
                 <template v-if="last">
                     <CoinFace v-for="(side, index) in last.coins" :key="`${revealed}-${index}`" :side="side" :size="72" />
                 </template>
+            </div>
+
+            <div class="cast__question">
+                <TaoTextarea id="cast-question" v-model="question" :aria-label="t('cast.questionLabel')" :rows="2" :maxlength="300" :placeholder="t('cast.questionPlaceholder')" />
             </div>
 
             <div class="cast__info">
@@ -138,9 +139,6 @@ const status = computed(() => {
 .cast__question {
     display: grid;
     gap: var(--tao-space-2);
-}
-.cast__label {
-    color: var(--tao-color-text);
 }
 .cast__stage {
     display: grid;

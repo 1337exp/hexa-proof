@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { TaoSpoiler, TaoTag } from '@1337exp/taoui';
 import { computed } from 'vue';
-import { hexagram } from '../../core/hexagram';
 import type { Passage } from '../../core/reading';
 import { t } from '../i18n';
-import { textOf } from '../texts';
+import { describePassage } from '../passages';
 
 /**
  * One place of the book: the classic words first, the explanation under them, folded away.
@@ -12,35 +11,7 @@ import { textOf } from '../texts';
  */
 const props = defineProps<{ passage: Passage; main?: boolean }>();
 
-interface Content {
-    title: string;
-    /** How the line is named: the book's own label, or solid / broken. / Как названа линия. */
-    kind?: string;
-    text: string;
-    comment?: string;
-    symbol?: string;
-    image?: string;
-}
-
-const content = computed<Content | null>(() => {
-    const p = props.passage;
-    const book = textOf(p.hexagram);
-    if (!book) return null;
-    if (p.kind === 'judgment') return { title: t('passage.judgmentOf', [book.name]), text: book.judgment?.text ?? '', comment: book.judgment?.comment, image: book.image?.text };
-    if (p.kind === 'useAll') {
-        const yang = hexagram(p.hexagram).lines[0] === '1';
-        return { title: t(yang ? 'passage.useAllNine' : 'passage.useAllSix'), text: book.useAll?.text ?? '', comment: book.useAll?.comment };
-    }
-    const line = book.lines[p.position - 1];
-    const solid = hexagram(p.hexagram).lines[p.position - 1] === '1';
-    return {
-        title: t('passage.lineOf', [p.position, book.name]),
-        kind: line?.label ?? t(solid ? 'passage.yang' : 'passage.yin'),
-        text: line?.text ?? '',
-        comment: line?.comment,
-        symbol: line?.symbol,
-    };
-});
+const content = computed(() => describePassage(props.passage));
 </script>
 
 <template>

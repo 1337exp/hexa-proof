@@ -7,7 +7,7 @@ import CastScreen from './components/CastScreen.vue';
 import LibraryView from './components/LibraryView.vue';
 import ReadingView from './components/ReadingView.vue';
 import { i18n, locale, t } from './i18n';
-import { addEntry, entries, startJournal } from './journal';
+import { addEntry, entries, removeEntry, startJournal } from './journal';
 import { cast, question, readingMode, reset, setReadingMode } from './session';
 import { startPackLoading } from './texts';
 import { computed } from 'vue';
@@ -35,22 +35,39 @@ function setLanguage(value: string | number | boolean): void {
 
 /** The id of the journal entry that holds the answer on the screen, once it is saved. / Id записи журнала с ответом на экране, когда он сохранён. */
 const savedId = ref<string | null>(null);
+/** The entry may be deleted from the journal itself meanwhile, then the answer is not saved any more. / Запись могли удалить в самом журнале. */
+const saved = computed(() => savedId.value !== null && entries.value.some((entry) => entry.id === savedId.value));
 
 function save(): void {
-    if (!cast.value || savedId.value) return;
+    if (!cast.value || saved.value) return;
     const entry = addEntry(cast.value, question.value);
-    if (entry) {
-        savedId.value = entry.id;
-        toast().success().message(t('journal.saved'));
-    }
+    if (entry) savedId.value = entry.id;
+}
+
+/** Reading the answer saves it: people do not scroll down to press «save». / Прочесть ответ значит сохранить его: до кнопки «сохранить» не доматывают. */
+function read(): void {
+    reading.value = true;
+    save();
+}
+
+function startOver(): void {
+    savedId.value = null;
+    reset();
+    reading.value = false;
+}
+
+async function remove(): Promise<void> {
+    if (!savedId.value) return;
+    if (!(await confirm().title(t('journal.deleteTitle')).message(t('journal.deleteMessage')).ok(t('journal.delete')).danger())) return;
+    removeEntry(savedId.value);
+    toast().success().message(t('journal.removed'));
+    startOver();
 }
 
 async function again(): Promise<void> {
     // a saved answer is safe in the journal: only an unsaved one is worth a question
-    if (!savedId.value && !(await confirm().title(t('reading.againTitle')).message(t('reading.againMessage')).ok(t('reading.again')).danger())) return;
-    savedId.value = null;
-    reset();
-    reading.value = false;
+    if (!saved.value && !(await confirm().title(t('reading.againTitle')).message(t('reading.againMessage')).ok(t('reading.again')).danger())) return;
+    startOver();
 }
 
 onMounted(() => {
@@ -86,18 +103,17 @@ onMounted(() => {
             </button>
         </nav>
 
-        <p class="app__tagline">{{ t('app.tagline') }}</p>
-
         <main class="app__main">
             <template v-if="view === 'cast'">
                 <ReadingView v-if="reading && cast" :cast="cast" :question="question" :mode="readingMode" @update:mode="setReadingMode">
                     <template #actions>
-                        <TaoTag v-if="savedId" tone="success" flat>{{ t('journal.saved') }}</TaoTag>
-                        <TaoButton v-else variant="primary" @click="save()">{{ t('journal.save') }}</TaoButton>
                         <TaoButton variant="secondary" @click="void again()">{{ t('reading.again') }}</TaoButton>
+                        <TaoTag v-if="saved" tone="success" flat>{{ t('journal.saved') }}</TaoTag>
+                        <TaoButton v-else variant="primary" @click="save()">{{ t('journal.save') }}</TaoButton>
+                        <TaoButton v-if="saved" variant="ghost" tone="danger" @click="void remove()">{{ t('journal.remove') }}</TaoButton>
                     </template>
                 </ReadingView>
-                <CastScreen v-else @read="reading = true" />
+                <CastScreen v-else @read="read" />
             </template>
             <JournalView v-else-if="view === 'journal'" />
             <LibraryView v-else-if="view === 'library'" />
@@ -200,12 +216,6 @@ onMounted(() => {
     .app__tools {
         gap: 4px;
     }
-}
-.app__tagline {
-    margin: 0;
-    max-width: 56ch;
-    font-size: 14px;
-    color: var(--tao-color-text-muted);
 }
 .visually-hidden {
     position: absolute;

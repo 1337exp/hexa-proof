@@ -58,6 +58,12 @@ export function removeEntry(id: string): void {
     persist();
 }
 
+/** Empties the journal. The caller asks first. / Очищает журнал; спрашивает тот, кто зовёт. */
+export function clearEntries(): void {
+    entries.value = [];
+    persist();
+}
+
 export function exportJournal(): void {
     const day = new Date().toISOString().slice(0, 10);
     downloadText(`hexa-proof-journal-${day}.json`, serializeJournal(entries.value));

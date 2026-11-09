@@ -136,6 +136,8 @@ export const DEFAULT_TUNING: Readonly<StageTuning> = {
 export interface TableStageOptions {
     /** Called when the person presses on the table. / Зовётся, когда человек нажимает на стол. */
     onActivate?: () => void;
+    /** Called at every hit of a coin on the felt, `strength` 0…1: for the sound. / Зовётся при каждом ударе монеты о сукно: для звука. */
+    onImpact?: (strength: number) => void;
 }
 
 export class TableStage {
@@ -179,7 +181,10 @@ export class TableStage {
     private aspect = 1.8;
     private readonly waves: { mesh: Mesh<PlaneGeometry, MeshBasicMaterial>; age: number; strength: number }[] = [];
 
+    private readonly onImpact?: (strength: number) => void;
+
     constructor(container: HTMLElement, options: TableStageOptions = {}) {
+        this.onImpact = options.onImpact;
         this.renderer = createRenderer(container, { antialias: true });
         // The tone mapping is applied to the whole frame, the picture of the table too: it makes the table dark and deep, and that is the look we want.
         // Тонмаппинг ложится на весь кадр, на картинку стола тоже: стол выходит тёмным и глубоким, это нужный нам вид.
@@ -311,6 +316,7 @@ export class TableStage {
         mesh.position.set(at.x, 0.012, at.z);
         this.scene.add(mesh);
         this.waves.push({ mesh, age: 0, strength });
+        this.onImpact?.(strength);
         this.shake = Math.max(this.shake, strength * this.tuning.shake);
         this.flash.position.set(at.x, 1.1, at.z);
         this.flashLevel = Math.max(this.flashLevel, strength * this.tuning.flash);

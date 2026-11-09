@@ -116,7 +116,7 @@ try {
         await page.waitForTimeout(800);
         await shot(page, 'reading');
 
-        await page.getByRole('button', { name: 'Save to the journal' }).click();
+        // reading the answer has saved it already
         await page.getByRole('button', { name: /^Journal/ }).click();
         await page.waitForTimeout(4500); // let the toast go
         await page.setViewportSize({ width: 1000, height: 480 });

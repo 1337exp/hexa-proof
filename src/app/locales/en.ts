@@ -1,7 +1,6 @@
 export const en = {
     app: {
         title: 'Hexa Proof',
-        tagline: 'An oracle of the Book of Changes: throw the coins, read the classic text.',
         language: 'Language',
     },
     nav: {
@@ -32,6 +31,8 @@ export const en = {
             v9: 'old yang: it changes',
         },
         figure: 'The hexagram, built from the bottom line up',
+        soundOn: 'Sound on',
+        soundOff: 'Sound off',
         hintStart: 'Press the table or the space bar to throw the coins.',
         tapTable: 'Tap the table',
         clickTable: 'Click the table',
@@ -52,6 +53,9 @@ export const en = {
         againTitle: 'Cast again?',
         againMessage: 'This answer will be lost: it is not saved anywhere yet.',
         saved: 'Saved to the journal',
+        copy: 'Copy the answer',
+        copied: 'The answer is copied',
+        copyFailed: 'The browser did not let it be copied',
         rule: {
             none: 'No line is changing, so the judgment of the hexagram is the answer.',
             one: 'One line is changing: its text is the answer.',
@@ -106,6 +110,12 @@ export const en = {
         save: 'Save to the journal',
         saved: 'Saved to the journal',
         back: 'All readings',
+        remove: 'Remove from the journal',
+        removed: 'Removed from the journal',
+        deleteEntry: 'Delete the reading',
+        clear: 'Clear',
+        clearTitle: 'Clear the journal?',
+        clearMessage: 'All readings ({0}) will be removed from this device. Export them first if you want to keep them.',
         delete: 'Delete',
         deleteTitle: 'Delete this reading?',
         deleteMessage: 'It will be removed from this device, and it cannot be taken back.',

@@ -29,12 +29,12 @@ npm run screenshot   # the pictures for this README, docs/media/*.png (needs Chr
 
 ## What it does
 
-- **The cast.** The method of three coins: the side with the animals is yang (3), the side with the trigrams is yin (2), a throw adds three coins into 6, 7, 8 or 9, with the chances 1/8, 3/8, 3/8, 1/8. Six throws give the hexagram from the bottom line up. Sixes and nines are changing lines and give a second hexagram. The numbers come from the system source (`crypto.getRandomValues`), not from `Math.random`.
-- **The table.** Press the table (or the space bar) to throw; «All six at once» throws the rest. Bronze coins are lifted, spin, and are pressed into the felt with a bump, then slide into the columns on the sides, three coins per throw, trigram by trigram. After the sixth throw a wave of glow runs over them. `prefers-reduced-motion` turns the show off: the result appears at once. Without WebGL the flat coins are shown instead.
-- **The reading.** Two ways to choose the places of the book: the rule of Zhu Xi (short: what weighs most) and «Everything». The screen says why these places were chosen.
+- **The cast.** The method of three coins: the side with the animals is yang (3), the side with the trigrams is yin (2), a throw adds three coins into 6, 7, 8 or 9, with the chances 1/8, 3/8, 3/8, 1/8. Six throws give the hexagram from the bottom line up. Sixes and nines are changing lines and give a second hexagram. The numbers come from the system source (`crypto.getRandomValues`), not from `Math.random`. The question is a note for yourself and does not affect the cast.
+- **The table.** Press the table (or the space bar) to throw; «All six at once» throws the rest. Bronze coins are lifted, spin, and are pressed into the felt with a bump, then slide into the columns on the sides, three coins per throw, trigram by trigram. Each landing is a beat of a dull deep drum (made by WebAudio on the spot, no files; a switch in the corner of the table). After the sixth throw a wave of glow runs over them. `prefers-reduced-motion` turns the show off: the result appears at once. Without WebGL the flat coins are shown instead.
+- **The reading.** Reading the answer saves it to the journal at once (a button at the bottom removes it), and an icon next to «The answer» copies it as plain text, to send to a friend or to an assistant. Two ways to choose the places of the book: the rule of Zhu Xi (short: what weighs most) and «Everything». The screen says why these places were chosen.
 - **The texts.** Russian: Yu. K. Shchutsky; English: James Legge (1882). The language of the book follows the language of the interface. The verdict, the image, the six lines, and the closing words of hexagrams 1 and 2.
 - **The library.** All 64 hexagrams, searchable by number and name, with their trigrams.
-- **The journal.** A reading is saved with the question, the date and a note of your own. It is kept on the device (the six numbers 6–9, not the random seed), exported to a JSON file and imported back; what is already there is never overwritten.
+- **The journal.** A reading is saved with the question, the date and a note of your own. A row is deleted with the cross in its corner or by a long swipe (both ask first); the whole journal can be cleared. It is kept on the device (the six numbers 6–9, not the random seed), exported to a JSON file and imported back; what is already there is never overwritten.
 - Light and dark themes, a narrow screen (a phone), the keyboard.
 
 ## How it is made
@@ -53,7 +53,7 @@ The Russian text of Shchutsky is protected until 31 December 2026 (he was shot i
 
 ## Not yet
 
-- The sound of bronze, incense smoke over the table.
+- A bronze chime for the wave of glow, incense smoke over the table.
 - The method of yarrow stalks (other chances).
 - The Thwan commentary and the small symbolism of the lines of Legge, the introduction and the footnotes.
 
