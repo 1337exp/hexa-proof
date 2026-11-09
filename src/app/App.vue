@@ -107,10 +107,12 @@ onMounted(() => {
             <template v-if="view === 'cast'">
                 <ReadingView v-if="reading && cast" :cast="cast" :question="question" :mode="readingMode" @update:mode="setReadingMode">
                     <template #actions>
+                        <div class="app__row">
+                            <TaoTag v-if="saved" tone="success" flat>{{ t('journal.saved') }}</TaoTag>
+                            <TaoButton v-else variant="primary" @click="save()">{{ t('journal.save') }}</TaoButton>
+                            <TaoButton v-if="saved" variant="ghost" tone="danger" @click="void remove()">{{ t('journal.remove') }}</TaoButton>
+                        </div>
                         <TaoButton variant="secondary" @click="void again()">{{ t('reading.again') }}</TaoButton>
-                        <TaoTag v-if="saved" tone="success" flat>{{ t('journal.saved') }}</TaoTag>
-                        <TaoButton v-else variant="primary" @click="save()">{{ t('journal.save') }}</TaoButton>
-                        <TaoButton v-if="saved" variant="ghost" tone="danger" @click="void remove()">{{ t('journal.remove') }}</TaoButton>
                     </template>
                 </ReadingView>
                 <CastScreen v-else @read="read" />
@@ -216,6 +218,12 @@ onMounted(() => {
     .app__tools {
         gap: 4px;
     }
+}
+.app__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--tao-space-2);
 }
 .visually-hidden {
     position: absolute;

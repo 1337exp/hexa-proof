@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TaoButton, TaoEmpty, TaoSegmented, TaoSegmentedOption, toast } from '@1337exp/taoui';
+import { TaoButton, TaoDivider, TaoEmpty, TaoSegmented, TaoSegmentedOption, toast } from '@1337exp/taoui';
 import { computed } from 'vue';
 import { changingPositions, primaryOf, relatingOf } from '../../core/hexagram';
 import { readCast, type ReadingMode } from '../../core/reading';
@@ -57,6 +57,8 @@ function setMode(value: string | number | boolean): void {
             </div>
         </div>
         <p class="reading__changing">{{ changing.length ? t('reading.changing', [changing.join(', ')]) : t('reading.noChange') }}</p>
+
+        <TaoDivider />
 
         <div class="reading__mode">
             <div class="reading__modebar">
@@ -157,6 +159,7 @@ function setMode(value: string | number | boolean): void {
 .reading__rule {
     margin: 0;
     color: var(--tao-color-text);
+    font-size: 14px;
 }
 .reading__passages {
     display: grid;
@@ -164,8 +167,9 @@ function setMode(value: string | number | boolean): void {
 }
 .reading__actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--tao-space-2);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--tao-space-3);
 }
 .reading__foot {
     display: flex;
