@@ -150,6 +150,15 @@ function setMode(value: string | number | boolean): void {
     display: grid;
     gap: var(--tao-space-2);
 }
+/* the name of the switch is for screen readers only: the rule written under it says what is read */
+.reading__mode :deep(.tao-segmented__legend) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
 .reading__modebar {
     display: flex;
     align-items: flex-end;
