@@ -9,7 +9,6 @@ import {
     HemisphereLight,
     Mesh,
     MeshBasicMaterial,
-    MeshPhysicalMaterial,
     MeshStandardMaterial,
     PCFSoftShadowMap,
     PerspectiveCamera,
@@ -18,6 +17,9 @@ import {
     PointLight,
     Quaternion,
     Scene,
+    ShadowMaterial,
+    SRGBColorSpace,
+    TextureLoader,
     SpotLight,
     Vector3,
     type Texture,
@@ -26,7 +28,8 @@ import {
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { Coin, Coins } from '../core/cast';
 import { createCoinGeometry } from './coinGeometry';
-import { coinFaceTexture, matTexture, rimTexture, ringTexture, tableTexture } from './textures';
+import tableUrl from './assets/table.webp';
+import { coinFaceTexture, rimTexture, ringTexture } from './textures';
 import { COIN_THICKNESS, flatQuaternion, newPose, planToss, upSide, yawOf, type CoinPose, type TossPlan } from './tossPlan';
 
 /**
@@ -114,12 +117,14 @@ export class TableStage {
     private flash!: PointLight;
     private flashLevel = 0;
     private ringMap!: Texture;
+    private backdrop: Texture | null = null;
+    private aspect = 1.8;
     private readonly waves: { mesh: Mesh<PlaneGeometry, MeshBasicMaterial>; age: number; strength: number }[] = [];
 
     constructor(container: HTMLElement, options: TableStageOptions = {}) {
         this.renderer = createRenderer(container, { antialias: true });
         this.renderer.toneMapping = ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.05;
+        this.renderer.toneMappingExposure = 0.95;
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = PCFSoftShadowMap;
         this.renderer.domElement.style.width = '100%';
@@ -145,10 +150,10 @@ export class TableStage {
         this.textures.push(environment);
 
         scene.add(new AmbientLight('#ffe6c8', 0.12));
-        scene.add(new HemisphereLight('#ffd9b0', '#1a0f0a', 0.35));
+        scene.add(new HemisphereLight('#ffd9b0', '#1a0f0a', 0.22));
 
         // the lamp: warm, from above and a little to the left, with soft shadows
-        const lamp = new SpotLight('#ffcf9a', 260, 40, 0.62, 0.85, 1.6);
+        const lamp = new SpotLight('#ffcf9a', 150, 40, 0.7, 0.9, 1.6);
         lamp.position.set(-3.5, 9.5, 4.5);
         lamp.target.position.set(0, 0, 0.3);
         lamp.castShadow = true;
@@ -163,20 +168,20 @@ export class TableStage {
         this.ringMap = ringTexture();
         this.textures.push(this.ringMap);
 
-        const woodMap = tableTexture();
-        const tableMaterial = new MeshPhysicalMaterial({ map: woodMap, roughness: 0.38, clearcoat: 0.85, clearcoatRoughness: 0.22, metalness: 0 });
-        const table = new Mesh(new PlaneGeometry(60, 40), tableMaterial);
-        table.rotation.x = -Math.PI / 2;
-        table.receiveShadow = true;
-        scene.add(table);
-
-        const feltMap = matTexture();
-        const mat = new Mesh(new PlaneGeometry(14.6, 8.2), new MeshStandardMaterial({ map: feltMap, roughness: 0.96, metalness: 0 }));
-        mat.rotation.x = -Math.PI / 2;
-        mat.position.set(0, 0.004, 0.75);
-        mat.receiveShadow = true;
-        scene.add(mat);
-        this.textures.push(woodMap, feltMap);
+        // The table is a picture: it is the background of the whole frame, and the plane under the coins is invisible, it only takes their shadows.
+        // Стол это картинка: она фон всего кадра, а плоскость под монетами невидима и только принимает их тени.
+        const ground = new Mesh(new PlaneGeometry(60, 40), new ShadowMaterial({ opacity: 0.6 }));
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+        new TextureLoader().loadAsync(tableUrl).then((map) => {
+            map.colorSpace = SRGBColorSpace;
+            this.backdrop = map;
+            this.textures.push(map);
+            scene.background = map;
+            this.fitBackground();
+            this.render();
+        });
 
         const geometry = createCoinGeometry();
         const yinMap = coinFaceTexture(2);
@@ -248,6 +253,7 @@ export class TableStage {
     private layout(width: number, height: number): void {
         const aspect = width / Math.max(1, height);
         this.camera.aspect = aspect;
+        this.aspect = aspect;
         const tan = Math.tan((this.camera.fov * Math.PI) / 360);
         const distance = Math.max(8.8, 6.7 / (tan * aspect), 5.2 / tan);
         const direction = new Vector3(0, 0.82, 0.57).normalize();
@@ -255,7 +261,24 @@ export class TableStage {
         this.camera.position.copy(this.cameraBase);
         this.camera.lookAt(this.target);
         this.camera.updateProjectionMatrix();
+        this.fitBackground();
         this.render();
+    }
+
+    /** The picture covers the whole frame without being stretched: what does not fit is cut off at the sides or at the top and bottom. / Картинка накрывает весь кадр без растяжения. */
+    private fitBackground(): void {
+        const map = this.backdrop;
+        const image = map?.image as { width: number; height: number } | undefined;
+        if (!map || !image) return;
+        const picture = image.width / image.height;
+        if (this.aspect > picture) {
+            map.repeat.set(1, picture / this.aspect);
+            map.offset.set(0, (1 - map.repeat.y) / 2);
+        } else {
+            map.repeat.set(this.aspect / picture, 1);
+            map.offset.set((1 - map.repeat.x) / 2, 0);
+        }
+        map.updateMatrix();
     }
 
     /**

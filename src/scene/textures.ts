@@ -112,46 +112,6 @@ export function rimTexture(): CanvasTexture {
     return texture(element, true);
 }
 
-/** Dark lacquered wood: long soft grain, a hint of red. / Тёмное лакированное дерево: длинные мягкие волокна, чуть красного. */
-export function tableTexture(): CanvasTexture {
-    const size = 1024;
-    const [element, g] = canvas(size);
-    const random = noise(77);
-    g.fillStyle = '#1d120d';
-    g.fillRect(0, 0, size, size);
-    for (let i = 0; i < 420; i++) {
-        const y = random() * size;
-        const wobble = (random() - 0.5) * 18;
-        g.strokeStyle = random() < 0.5 ? `rgba(90,45,25,${0.03 + random() * 0.07})` : `rgba(0,0,0,${0.05 + random() * 0.1})`;
-        g.lineWidth = 0.6 + random() * 3;
-        g.beginPath();
-        g.moveTo(0, y);
-        g.bezierCurveTo(size * 0.3, y + wobble, size * 0.65, y - wobble, size, y + wobble * 0.4);
-        g.stroke();
-    }
-    const result = texture(element, true);
-    result.repeat.set(3, 3);
-    return result;
-}
-
-/** A felt mat in the middle of the table, where the coins fall. / Войлочный коврик посередине стола, куда падают монеты. */
-export function matTexture(): CanvasTexture {
-    const size = 512;
-    const [element, g] = canvas(size);
-    const random = noise(13);
-    g.fillStyle = '#3b1712';
-    g.fillRect(0, 0, size, size);
-    for (let i = 0; i < 24000; i++) {
-        g.fillStyle = random() < 0.5 ? 'rgba(120,50,40,0.10)' : 'rgba(10,2,0,0.14)';
-        g.fillRect(random() * size, random() * size, 1 + random() * 1.5, 1 + random() * 1.5);
-    }
-    g.strokeStyle = 'rgba(190,140,80,0.35)';
-    g.lineWidth = 4;
-    g.strokeRect(10, 10, size - 20, size - 20);
-    const result = texture(element);
-    return result;
-}
-
 /** A thin bright ring that fades to both sides: the shock wave on the felt. / Тонкое светлое кольцо, тающее в обе стороны: ударная волна на войлоке. */
 export function ringTexture(): CanvasTexture {
     const size = 256;
