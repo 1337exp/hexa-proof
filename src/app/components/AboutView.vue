@@ -34,7 +34,7 @@ const RULES = ['none', 'one', 'two', 'three', 'four', 'five', 'six'] as const;
             </div>
         </TaoSpoiler>
 
-        <TaoAlert tone="info" :message="t('about.notice')" />
+        <TaoAlert tone="info">{{ t('about.notice') }}</TaoAlert>
     </section>
 </template>
 

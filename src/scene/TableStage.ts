@@ -222,9 +222,38 @@ export class TableStage {
         });
         this.composer.addPass(this.vignettePass);
         this.unbind = bindResize(this.renderer, container, (width, height) => this.layout(width, height), { updateStyle: false });
-        if (options.onActivate) this.renderer.domElement.addEventListener('pointerdown', options.onActivate);
+        if (options.onActivate) this.listenForTap(this.renderer.domElement, options.onActivate);
 
         this.loop = startLoop((dt) => this.step(dt), { maxDt: 1 / 30 });
+    }
+
+    /**
+     * A tap on the table, not a touch that begins a scroll. The renderer makes the canvas `touch-action: none` (a finger is for the game),
+     * but the table has no gesture of its own, so a finger moving along the page must scroll it: `pan-y` gives that back, and the browser then
+     * cancels the pointer. What counts as a tap is a short touch that has hardly moved, and it is counted when the finger or the button is lifted.
+     * Касание стола, а не начало прокрутки. Рендерер ставит холсту `touch-action: none` (палец принадлежит игре), но у стола своих жестов нет,
+     * поэтому палец, ведущий вдоль страницы, должен её листать: `pan-y` это возвращает, и браузер тогда отменяет указатель. Касанием считается
+     * короткое и почти неподвижное, оно засчитывается, когда палец или кнопку отпустили.
+     */
+    private listenForTap(element: HTMLElement, onTap: () => void): void {
+        const SLOP = 10; // px
+        const LONGEST = 600; // ms
+        element.style.touchAction = 'pan-y';
+        let start: { id: number; x: number; y: number; at: number; moved: boolean } | null = null;
+        element.addEventListener('pointerdown', (event) => {
+            start = { id: event.pointerId, x: event.clientX, y: event.clientY, at: event.timeStamp, moved: false };
+        });
+        element.addEventListener('pointermove', (event) => {
+            if (start && start.id === event.pointerId && Math.hypot(event.clientX - start.x, event.clientY - start.y) > SLOP) start.moved = true;
+        });
+        element.addEventListener('pointerup', (event) => {
+            const press = start;
+            start = null;
+            if (press && press.id === event.pointerId && !press.moved && event.timeStamp - press.at <= LONGEST) onTap();
+        });
+        element.addEventListener('pointercancel', () => {
+            start = null; // the browser took the touch for a scroll
+        });
     }
 
     private buildScene(): void {
