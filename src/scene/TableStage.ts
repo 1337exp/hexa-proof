@@ -97,6 +97,42 @@ interface CoinState {
     appear: number;
 }
 
+/**
+ * The knobs of the look, read every frame: the laboratory turns them with sliders, the application keeps the defaults.
+ * Ручки вида, читаются каждый кадр: лаборатория крутит их ползунками, приложение держит значения по умолчанию.
+ */
+export interface StageTuning {
+    lamp: number;
+    exposure: number;
+    vignette: number;
+    vignetteSoftness: number;
+    bloomStrength: number;
+    bloomThreshold: number;
+    bloomRadius: number;
+    glowPower: number;
+    glowPulse: number;
+    glowWave: number;
+    shake: number;
+    flash: number;
+    ring: number;
+}
+
+export const DEFAULT_TUNING: Readonly<StageTuning> = {
+    lamp: 150,
+    exposure: 0.95,
+    vignette: 0.85,
+    vignetteSoftness: 0.62,
+    bloomStrength: 1.8,
+    bloomThreshold: 0.85,
+    bloomRadius: 0.35,
+    glowPower: 5,
+    glowPulse: 0.75,
+    glowWave: 0.95,
+    shake: 1,
+    flash: 1,
+    ring: 1,
+};
+
 export interface TableStageOptions {
     /** Called when the person presses on the table. / Зовётся, когда человек нажимает на стол. */
     onActivate?: () => void;
@@ -108,6 +144,9 @@ export class TableStage {
 
     /** Full turns of the coins in the air; the look of the toss can be tuned with it. / Полных оборотов монет в воздухе. */
     turns = 2;
+
+    /** The knobs of the look. / Ручки вида. */
+    readonly tuning: StageTuning = { ...DEFAULT_TUNING };
 
     /** Where the columns of the six throws stand. / Где стоят столбики шести бросков. */
     columnLayout: ColumnLayout = 'trigrams';
@@ -131,6 +170,8 @@ export class TableStage {
     private ringMap!: Texture;
     private backdrop: Texture | null = null;
     private composer!: EffectComposer;
+    private lamp!: SpotLight;
+    private vignettePass!: ShaderPass;
     private bloom!: UnrealBloomPass;
     /** The wave of glow that runs over the coins when the sixth line is down: seconds since it began, or −1. / Волна свечения: секунды от начала или −1. */
     private glowTime = -1;
@@ -158,8 +199,7 @@ export class TableStage {
         this.composer.addPass(this.bloom);
         this.composer.addPass(new OutputPass());
         // the vignette: the corners go dark, as if the table were lit by one lamp in the middle
-        this.composer.addPass(
-            new ShaderPass({
+        this.vignettePass = new ShaderPass({
                 uniforms: { tDiffuse: { value: null }, strength: { value: 0.85 }, softness: { value: 0.62 } },
                 vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
                 fragmentShader: `
@@ -174,8 +214,8 @@ export class TableStage {
                         color.rgb *= 1.0 - strength * edge;
                         gl_FragColor = color;
                     }`,
-            }),
-        );
+        });
+        this.composer.addPass(this.vignettePass);
         this.unbind = bindResize(this.renderer, container, (width, height) => this.layout(width, height), { updateStyle: false });
         if (options.onActivate) this.renderer.domElement.addEventListener('pointerdown', options.onActivate);
 
@@ -198,7 +238,7 @@ export class TableStage {
         scene.add(new HemisphereLight('#ffd9b0', '#1a0f0a', 0.22));
 
         // the lamp: warm, from above and a little to the left, with soft shadows
-        const lamp = new SpotLight('#ffcf9a', 150, 40, 0.7, 0.9, 1.6);
+        const lamp = (this.lamp = new SpotLight('#ffcf9a', 150, 40, 0.7, 0.9, 1.6));
         lamp.position.set(-3.5, 9.5, 4.5);
         lamp.target.position.set(0, 0, 0.3);
         lamp.castShadow = true;
@@ -271,9 +311,9 @@ export class TableStage {
         mesh.position.set(at.x, 0.012, at.z);
         this.scene.add(mesh);
         this.waves.push({ mesh, age: 0, strength });
-        this.shake = Math.max(this.shake, strength);
+        this.shake = Math.max(this.shake, strength * this.tuning.shake);
         this.flash.position.set(at.x, 1.1, at.z);
-        this.flashLevel = Math.max(this.flashLevel, strength);
+        this.flashLevel = Math.max(this.flashLevel, strength * this.tuning.flash);
     }
 
     /**
@@ -284,24 +324,39 @@ export class TableStage {
         const xs = this.coins.map((state) => state.mesh.position.x);
         const left = Math.min(...xs);
         const span = Math.max(...xs) - left || 1;
-        for (const state of this.coins) state.glowDelay = ((state.mesh.position.x - left) / span) * 0.95;
+        for (const state of this.coins) state.glowDelay = ((state.mesh.position.x - left) / span) * this.tuning.glowWave;
         this.glowTime = 0;
+    }
+
+    /** Plays the wave of glow over the coins that lie on the table now (for the laboratory). / Пускает волну по монетам, что лежат на столе. */
+    playGlow(): void {
+        this.startGlow();
+    }
+
+    private applyTuning(): void {
+        const t = this.tuning;
+        this.lamp.intensity = t.lamp;
+        this.renderer.toneMappingExposure = t.exposure;
+        this.vignettePass.uniforms.strength!.value = t.vignette;
+        this.vignettePass.uniforms.softness!.value = t.vignetteSoftness;
+        this.bloom.threshold = t.bloomThreshold;
+        this.bloom.radius = t.bloomRadius;
     }
 
     private animateGlow(dt: number): void {
         if (this.glowTime < 0) return;
-        const PULSE = 0.75;
+        const PULSE = this.tuning.glowPulse;
         this.glowTime += dt;
         let level = 0;
         for (const state of this.coins) {
             const t = this.glowTime - state.glowDelay;
             const pulse = t > 0 && t < PULSE ? Math.sin((Math.PI * t) / PULSE) ** 2 : 0;
             level = Math.max(level, pulse);
-            for (const face of state.faces) face.emissiveIntensity = pulse * 5;
+            for (const face of state.faces) face.emissiveIntensity = pulse * this.tuning.glowPower;
         }
-        this.bloom.strength = level * 1.8;
+        this.bloom.strength = level * this.tuning.bloomStrength;
         this.bloom.enabled = level > 0.01;
-        if (this.glowTime > 0.95 + PULSE + 0.05) {
+        if (this.glowTime > this.tuning.glowWave + PULSE + 0.05) {
             this.glowTime = -1;
             this.bloom.enabled = false;
         }
@@ -321,7 +376,7 @@ export class TableStage {
                 this.waves.splice(i, 1);
                 continue;
             }
-            wave.mesh.scale.setScalar(1.4 + k * 4.2);
+            wave.mesh.scale.setScalar((1.4 + k * 4.2) * this.tuning.ring);
             wave.mesh.material.opacity = 0.85 * wave.strength * (1 - k) ** 1.6;
         }
         this.flashLevel *= Math.exp(-dt * 11);
@@ -505,6 +560,7 @@ export class TableStage {
             state.mesh.scale.copy(state.pose.scale).multiplyScalar(state.appear);
         }
         this.animateEffects(dt);
+        this.applyTuning();
         this.animateGlow(scaled);
         if (this.pending) this.completeIfStill();
         this.render();

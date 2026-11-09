@@ -1,5 +1,5 @@
 import type { Coin, Coins } from '../src/core/cast';
-import { TableStage } from '../src/scene/TableStage';
+import { DEFAULT_TUNING, TableStage, type StageTuning } from '../src/scene/TableStage';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -69,3 +69,75 @@ $('all').addEventListener('click', async () => {
     stage.speed = was;
     $('verdict').innerHTML = wrong ? `<span class="bad">${wrong} of 24 tosses are wrong</span>` : '<span class="ok">All 24 tosses landed on the wanted sides.</span>';
 });
+
+// ---- the sliders of the look ----------------------------------------------------------------------------------------------------------
+// What is turned is kept in the browser, so it is still there after a reload; the button brings the defaults back.
+
+interface Knob {
+    key: keyof StageTuning;
+    label: string;
+    min: number;
+    max: number;
+    step: number;
+}
+
+const KNOBS: Knob[] = [
+    { key: 'lamp', label: 'Lamp', min: 0, max: 400, step: 5 },
+    { key: 'exposure', label: 'Exposure', min: 0.3, max: 2.5, step: 0.05 },
+    { key: 'vignette', label: 'Vignette', min: 0, max: 1, step: 0.01 },
+    { key: 'vignetteSoftness', label: 'Vignette reach', min: 0.2, max: 1.4, step: 0.01 },
+    { key: 'bloomStrength', label: 'Bloom strength', min: 0, max: 4, step: 0.05 },
+    { key: 'bloomThreshold', label: 'Bloom threshold', min: 0, max: 1.5, step: 0.01 },
+    { key: 'bloomRadius', label: 'Bloom radius', min: 0, max: 1.2, step: 0.01 },
+    { key: 'glowPower', label: 'Glow of coins', min: 0, max: 12, step: 0.1 },
+    { key: 'glowPulse', label: 'Glow pulse, s', min: 0.2, max: 2, step: 0.05 },
+    { key: 'glowWave', label: 'Wave length, s', min: 0.1, max: 3, step: 0.05 },
+    { key: 'shake', label: 'Camera shake', min: 0, max: 4, step: 0.1 },
+    { key: 'flash', label: 'Hit flash', min: 0, max: 4, step: 0.1 },
+    { key: 'ring', label: 'Hit ring size', min: 0.2, max: 3, step: 0.05 },
+];
+
+const STORE = 'hexa-proof.lab.tuning';
+try {
+    Object.assign(stage.tuning, JSON.parse(localStorage.getItem(STORE) ?? '{}'));
+} catch {
+    // no storage: the defaults stay
+}
+
+const knobs = $('knobs');
+const sliders = new Map<keyof StageTuning, [HTMLInputElement, HTMLOutputElement]>();
+for (const knob of KNOBS) {
+    const label = document.createElement('label');
+    label.append(knob.label);
+    const input = document.createElement('input');
+    Object.assign(input, { type: 'range', min: String(knob.min), max: String(knob.max), step: String(knob.step), value: String(stage.tuning[knob.key]) });
+    const out = document.createElement('output');
+    out.textContent = String(stage.tuning[knob.key]);
+    input.addEventListener('input', () => {
+        stage.tuning[knob.key] = Number(input.value);
+        out.textContent = input.value;
+        try {
+            localStorage.setItem(STORE, JSON.stringify(stage.tuning));
+        } catch {
+            // not kept
+        }
+    });
+    label.append(input, out);
+    knobs.append(label);
+    sliders.set(knob.key, [input, out]);
+}
+
+$('resetTuning').addEventListener('click', () => {
+    Object.assign(stage.tuning, DEFAULT_TUNING);
+    for (const [key, [input, out]] of sliders) {
+        input.value = String(DEFAULT_TUNING[key]);
+        out.textContent = String(DEFAULT_TUNING[key]);
+    }
+    try {
+        localStorage.removeItem(STORE);
+    } catch {
+        // nothing to remove
+    }
+});
+
+$('glow').addEventListener('click', () => stage.playGlow());
