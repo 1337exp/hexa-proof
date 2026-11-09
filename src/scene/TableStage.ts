@@ -193,7 +193,8 @@ export class TableStage {
 
     constructor(container: HTMLElement, options: TableStageOptions = {}) {
         this.onGlow = options.onGlow;
-        this.renderer = createRenderer(container, { antialias: true });
+        // `pan-y`: the table has no gesture of its own, so a finger moving along the page must scroll it (the library makes the canvas `none` by default)
+        this.renderer = createRenderer(container, { antialias: true }, { touchAction: 'pan-y' });
         // The tone mapping is applied to the whole frame, the picture of the table too: it makes the table dark and deep, and that is the look we want.
         // Тонмаппинг ложится на весь кадр, на картинку стола тоже: стол выходит тёмным и глубоким, это нужный нам вид.
         this.renderer.toneMapping = ACESFilmicToneMapping;
@@ -236,18 +237,16 @@ export class TableStage {
     }
 
     /**
-     * A tap on the table, not a touch that begins a scroll. The renderer makes the canvas `touch-action: none` (a finger is for the game),
+     * A tap on the table, not a touch that begins a scroll. The canvas is made `touch-action: pan-y` (the `createRenderer` option; by default the library makes it `none`, a finger is for the game),
      * but the table has no gesture of its own, so a finger moving along the page must scroll it: `pan-y` gives that back, and the browser then
      * cancels the pointer. What counts as a tap is a short touch that has hardly moved, and it is counted when the finger or the button is lifted.
-     * Касание стола, а не начало прокрутки. Рендерер ставит холсту `touch-action: none` (палец принадлежит игре), но у стола своих жестов нет,
-     * поэтому палец, ведущий вдоль страницы, должен её листать: `pan-y` это возвращает, и браузер тогда отменяет указатель. Касанием считается
+     * Касание стола, а не начало прокрутки. Холст сделан с `touch-action: pan-y` (опция `createRenderer`): у стола своих жестов нет, поэтому палец,
+     * ведущий вдоль страницы, должен её листать, и браузер тогда отменяет указатель. Касанием считается
      * короткое и почти неподвижное, оно засчитывается, когда палец или кнопку отпустили.
      */
     private listenForTap(element: HTMLElement, onTap: () => void): void {
         const SLOP = 10; // px
         const LONGEST = 600; // ms
-        // TODO: when @1337exp/pkt-threejs-blueprint 0.1.1 is published, pass `{ touchAction: 'pan-y' }` to createRenderer instead of this line.
-        element.style.touchAction = 'pan-y';
         let start: { id: number; x: number; y: number; at: number; moved: boolean } | null = null;
         element.addEventListener('pointerdown', (event) => {
             start = { id: event.pointerId, x: event.clientX, y: event.clientY, at: event.timeStamp, moved: false };
