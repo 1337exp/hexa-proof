@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TaoSpoiler, TaoTag } from '@1337exp/taoui';
+import { TaoSpoiler } from '@1337exp/taoui';
 import { computed } from 'vue';
 import type { Passage } from '../../core/reading';
 import { t } from '../i18n';
@@ -18,7 +18,7 @@ const content = computed(() => describePassage(props.passage));
     <article v-if="content" class="passage" :class="{ 'passage--main': main }">
         <header class="passage__head">
             <h4 class="passage__title">{{ content.title }}</h4>
-            <TaoTag v-if="main" tone="neutral" flat size="small">{{ t('passage.main') }}</TaoTag>
+            <span v-if="main" class="passage__main">{{ t('passage.main') }}</span>
         </header>
         <small v-if="content.kind" class="passage__kind">{{ content.kind }}</small>
         <blockquote v-if="content.text" class="passage__words">{{ content.text }}</blockquote>
@@ -43,8 +43,13 @@ const content = computed(() => describePassage(props.passage));
     border-radius: var(--tao-radius-panel);
     background: var(--tao-color-surface);
 }
-.passage--main {
-    border-color: var(--hx-bronze);
+.passage__main {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--hx-bronze-light) 16%, transparent);
+    color: var(--hx-bronze-light);
+    font-size: 12px;
+    font-weight: 600;
 }
 .passage__head {
     display: flex;

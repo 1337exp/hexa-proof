@@ -58,7 +58,7 @@ function setMode(value: string | number | boolean): void {
         </div>
         <p class="reading__changing">{{ changing.length ? t('reading.changing', [changing.join(', ')]) : t('reading.noChange') }}</p>
 
-        <TaoDivider />
+        <TaoDivider class="reading__divider" />
 
         <div class="reading__mode">
             <div class="reading__modebar">
@@ -87,6 +87,9 @@ function setMode(value: string | number | boolean): void {
 .reading {
     display: grid;
     gap: var(--tao-space-5);
+}
+.reading .reading__divider {
+    margin: 0; /* the gap of the grid is enough: the divider's own margin pushed the two parts far apart */
 }
 .reading__titlebar {
     display: flex;
