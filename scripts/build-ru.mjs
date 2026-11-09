@@ -53,6 +53,16 @@ for (const { where, from, to, note } of overrides.fixes ?? []) {
     target.note = note;
 }
 
+// The one place where the source has no words at all (9.2) is filled by us from the Chinese and Legge, and the note says so.
+// Единственное место, где в источнике нет слов совсем (9.2), заполнено нами по китайскому и Леггу, и пометка об этом говорит.
+for (const { where, text, note } of overrides.fills ?? []) {
+    const [number, position] = where.split('.').map(Number);
+    const line = hexagrams[number - 1]?.lines[position - 1];
+    if (!line || line.text) throw new Error(`overrides.fills ${where}: the line is missing or already has words`);
+    line.text = text;
+    line.note = note;
+}
+
 const pack = {
     lang: 'ru',
     source: {

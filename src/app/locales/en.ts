@@ -109,7 +109,7 @@ export const en = {
             'There are two ways to choose what to read. The rule of Zhu Xi (12th century) is the common one and keeps the reading short: it picks the place that matters most for the number of changing lines. Everything shows all that the cast points at: the judgment, every changing line, and the judgment of the second hexagram. The switch is above the text of the answer.',
         sources: 'The books',
         sourceEn: 'English: James Legge, The Yî King (1882, public domain). The verdict, the lines and the image of every hexagram.',
-        sourceRu: 'Russian: Yu. K. Shchutsky, The Chinese Classical Book of Changes. His explanation of the figure and of every line, with the classic words inside it.',
+        sourceRu: 'Russian: Yu. K. Shchutsky, The Chinese Classical Book of Changes. His explanation of the figure and of every line, with the classic words inside it. In five places the text is mended against the Chinese original (or, where the book has no words, filled in by us); each of them is marked with a note.',
         introTitle: 'From the introduction of the book',
         notice: 'This is a reading aid, not advice. Decisions about health, money and law are for you and the right professionals.',
     },

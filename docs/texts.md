@@ -18,7 +18,7 @@ Defects of the source file (found by the cross-check, each one pinned in `tests/
 | Where | What |
 |---|---|
 | hexagrams 29 and 30 | stand in the opposite order; the parser goes by the number in the header |
-| hexagram 9, line 2 | the file gives only «Сильная черта на втором месте.» and no words after it; the pack has an empty `text` there (the interface shows the commentary only) |
+| hexagram 9, line 2 | the file gives only «Сильная черта на втором месте.» and no words after it. The parser still finds it empty (pinned in `tests/ru-parse.test.ts`), but **the pack is filled by us** (`fills` in `scripts/overrides.ru.json`): «Тебя влекут к возвращению на собственный путь. Счастье.», made from the Chinese 牽復，吉 and Legge, in the manner of Shchutsky, with a `note` that says so |
 | drawings of 21, 22, 23, 24, 25, 55 | typed wrongly (21 and 22, 23 and 24 are swapped; 25 has a stray row; 55 shows 54); the names and the texts are right; our table of facts is the authority |
 | drawings of 25 and 26 | seven rows instead of six |
 | labels of 30.1, 42.1, 42.6, 61.6 | «слабая черта» where the line is solid (the words of the line, Legge and our table of facts agree; only the label is a typo of the source); mended by `labels` in `scripts/overrides.ru.json`, found by `tests/texts.test.ts` (labels against the table of facts) |

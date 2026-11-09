@@ -15,7 +15,7 @@ interface Expectation {
 }
 
 const PACKS: Expectation[] = [
-    { lang: 'ru', gaps: ['9.2'], image: false },
+    { lang: 'ru', gaps: [], image: false }, // 9.2 was the one gap; it is filled by us (see the note of the line)
     { lang: 'en', gaps: [], image: true },
 ];
 
@@ -163,7 +163,13 @@ describe('what the review of the packs found', () => {
         expect(l541.note).toMatch(/китайскому тексту/);
         // and nothing else carries a note
         const noted = ru.hexagrams.flatMap((h) => [h.judgment?.note, ...h.lines.map((l) => l.note)]).filter(Boolean);
-        expect(noted).toHaveLength(4);
+        expect(noted).toHaveLength(5); // the four mended places and the one filled
+    });
+
+    it('fills the one empty line of the source (9.2) from the Chinese and Legge, and says so', () => {
+        const line = ru.hexagrams[8]!.lines[1]!;
+        expect(line.text).toBe('Тебя влекут к возвращению на собственный путь. Счастье.');
+        expect(line.note).toMatch(/составлен нами/);
     });
 
     it('has the circumflex in the name of the 27th hexagram and the repaired places of Legge', () => {

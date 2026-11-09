@@ -47,6 +47,8 @@ npm run screenshot   # the pictures for this README, docs/media/*.png (needs Chr
 
 ## The texts
 
+**We went further than the source.** The Russian book has places that are wrong against the Chinese original (and Legge): four lines (40.2, 54.1, 64.5 and the verdict of 62) say the opposite of the original, and one line (9.2) has no words at all. We mended them and filled the gap ourselves, and **every such place carries a visible note** in the app ("mended against the Chinese text"). The orders of the work, the findings of two outside reviews and what was left as the author has it are in [docs/texts.md](docs/texts.md).
+
 `sources/` is git-ignored (the files are not ours to hand out). The ready packs are in the repository, so `npm run dev` works without them; `npm run texts` needs `sources/`. Where each text comes from and under what terms: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 The Russian text of Shchutsky is protected until 31 December 2026 (he was shot in 1938 and rehabilitated in 1956; art. 1281 of the Civil Code of the Russian Federation), so the Russian pack goes into a public repository only from 1 January 2027. This is our reading of the law, not legal advice.
