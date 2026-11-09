@@ -28,8 +28,9 @@ import {
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { Coin, Coins } from '../core/cast';
 import { createCoinGeometry } from './coinGeometry';
+import coinUrl from './assets/coin.webp';
 import tableUrl from './assets/table.webp';
-import { coinFaceTexture, rimTexture, ringTexture } from './textures';
+import { rimTexture, ringTexture } from './textures';
 import { COIN_THICKNESS, flatQuaternion, newPose, planToss, upSide, yawOf, type CoinPose, type TossPlan } from './tossPlan';
 
 /**
@@ -92,7 +93,7 @@ export interface TableStageOptions {
 
 export class TableStage {
     /** The speed of the time of the toss: 1 is real time, 0 stops it (for the laboratory). / Скорость времени броска. */
-    speed = 1.25;
+    speed = 1.35;
 
     /** Full turns of the coins in the air; the look of the toss can be tuned with it. / Полных оборотов монет в воздухе. */
     turns = 2;
@@ -184,15 +185,21 @@ export class TableStage {
         });
 
         const geometry = createCoinGeometry();
-        const yinMap = coinFaceTexture(2);
-        const yangMap = coinFaceTexture(3);
+        // One picture of a coin for both faces for now (the painted face, with the eight trigrams). It covers the square that holds the disc,
+        // so the geometry's UV (the plain x, y of the shape, from -R to R) are brought to 0..1.
+        // Пока одна картинка монеты на обе стороны. Она накрывает квадрат вокруг диска, поэтому UV геометрии приводятся к 0..1.
+        const coinMap = new TextureLoader().load(coinUrl, () => this.render());
+        coinMap.colorSpace = SRGBColorSpace;
+        coinMap.anisotropy = 8;
+        coinMap.repeat.set(0.5, 0.5);
+        coinMap.offset.set(0.5, 0.5);
         const rimMap = rimTexture();
-        this.textures.push(yinMap, yangMap, rimMap);
-        const face = (map: typeof yinMap) => new MeshStandardMaterial({ map, bumpMap: map, bumpScale: 1.2, metalness: 0.88, roughness: 0.42 });
+        this.textures.push(coinMap, rimMap);
+        const face = () => new MeshStandardMaterial({ map: coinMap, bumpMap: coinMap, bumpScale: 1.6, metalness: 0.75, roughness: 0.5 });
         const rim = new MeshStandardMaterial({ map: rimMap, metalness: 0.85, roughness: 0.5 });
 
-        const yinFace = face(yinMap);
-        const yangFace = face(yangMap);
+        const yinFace = face();
+        const yangFace = face();
         for (let index = 0; index < THROWS * 3; index++) {
             const mesh = new Mesh(geometry, [yinFace, yangFace, rim]);
             mesh.castShadow = true;
