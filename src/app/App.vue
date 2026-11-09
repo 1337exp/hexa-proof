@@ -96,6 +96,15 @@ onMounted(startPackLoading);
     max-width: 52ch;
     color: var(--tao-color-text-muted);
 }
+/* the name of the language switch is for screen readers only: the two letters speak for themselves */
+.app__tools :deep(.tao-segmented__legend) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
 .app__tools {
     display: flex;
     gap: var(--tao-space-3);

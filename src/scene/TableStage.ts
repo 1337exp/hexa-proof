@@ -128,7 +128,7 @@ export const DEFAULT_TUNING: Readonly<StageTuning> = {
     glowPower: 5,
     glowPulse: 1.5,
     glowWave: 0.95,
-    shake: 1,
+    shake: 0,
     flash: 0.2,
     ring: 0.8,
 };

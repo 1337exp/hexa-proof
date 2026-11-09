@@ -29,3 +29,12 @@ body {
 * {
     box-sizing: border-box;
 }
+
+/* The radii a little softer than the TaoUI defaults (4 / 8 / 12), the same as in next-up / Скругления мягче, чем по умолчанию в TaoUI, как в next-up */
+:root {
+    --tao-radius-sm: 6px;
+    --tao-radius-md: 10px;
+    --tao-radius-lg: 14px;
+    --tao-radius-control: 10px;
+    --tao-radius-panel: 18px;
+}
