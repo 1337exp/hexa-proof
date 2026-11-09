@@ -15,8 +15,13 @@ const emit = defineEmits<{ read: [] }>();
 const table = ref<InstanceType<typeof CoinTable> | null>(null);
 const flat = ref(false); // no WebGL: show the flat coins / нет WebGL: плоские монеты
 const busy = ref(false);
-/** How many lines have landed: the figure shows only those. / Сколько линий уже упало: фигура показывает только их. */
-const revealed = ref(0);
+/**
+ * How many lines have landed: the figure shows only those. The cast lives in the session, not in this screen: when the reader comes back from another
+ * section the lines that were thrown are already there, and the table is put back to match (see `restoreTable`).
+ * Сколько линий уже упало: фигура показывает только их. Бросок живёт в сессии, а не на этом экране: когда читатель возвращается из другого раздела,
+ * брошенные линии уже есть, а стол ставится в соответствие им.
+ */
+const revealed = ref(throws.value.length);
 let cancelled = false;
 
 const reducedMotion = (): boolean => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -83,7 +88,25 @@ function onKey(event: KeyboardEvent): void {
     activate();
 }
 
-onMounted(() => window.addEventListener('keydown', onKey));
+/**
+ * The screen is made anew every time the reader comes back to it, with a table that is empty and counts from the first throw, while the session still
+ * holds the lines. The coins of the lines already thrown are put into their columns at once (no motion, no sound, no glow), so the table and the cast agree
+ * and the next press throws the next line (or the button to read the answer is there, if all six are thrown).
+ * Экран создаётся заново при каждом возвращении, и стол на нём пуст и считает с первого броска, а сессия помнит линии. Монеты уже брошенных линий сразу
+ * ставятся в свои колонки (без движения, звука и свечения), чтобы стол и бросок сходились.
+ */
+async function restoreTable(): Promise<void> {
+    const thrown = throws.value.slice();
+    if (!thrown.length) return;
+    busy.value = true; // nothing can be thrown until the table has caught up
+    for (const [index, one] of thrown.entries()) await table.value?.toss(one.coins, true, index);
+    busy.value = false;
+}
+
+onMounted(() => {
+    window.addEventListener('keydown', onKey);
+    void restoreTable();
+});
 onBeforeUnmount(() => {
     cancelled = true;
     clearTimeout(idleTimer);
