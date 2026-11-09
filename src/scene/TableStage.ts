@@ -47,8 +47,17 @@ const COLUMN_X = [2.8, 4.2, 5.6]; // from the middle outwards; the first throw g
 /** The coins of six throws. / Монеты шести бросков. */
 const THROWS = 6;
 
-/** The place of the column of a throw: the throws go left, right, left, right…, from the outer edge in. / Место столбика: влево, вправо, влево… от края к середине. */
-export function columnX(throwIndex: number): number {
+/**
+ * How the columns are set: 'alternate' goes left, right, left, right… from the outer edge in; 'trigrams' puts the lines 1–3 on the left
+ * (the lower trigram, left to right) and the lines 4–6 on the right (the upper trigram, left to right).
+ * Как расставлять столбики: 'alternate' — влево, вправо, влево… от края к середине; 'trigrams' — линии 1–3 слева (нижняя триграмма),
+ * линии 4–6 справа (верхняя триграмма), обе слева направо.
+ */
+export type ColumnLayout = 'alternate' | 'trigrams';
+
+/** The place of the column of a throw. / Место столбика броска. */
+export function columnX(throwIndex: number, layout: ColumnLayout = 'alternate'): number {
+    if (layout === 'trigrams') return throwIndex < 3 ? -COLUMN_X[2 - throwIndex]! : COLUMN_X[throwIndex - 3]!;
     const side = throwIndex % 2 === 0 ? -1 : 1;
     return side * COLUMN_X[COLUMN_X.length - 1 - (throwIndex >> 1)]!;
 }
@@ -84,6 +93,9 @@ export class TableStage {
 
     /** Full turns of the coins in the air; the look of the toss can be tuned with it. / Полных оборотов монет в воздухе. */
     turns = 2;
+
+    /** Where the columns of the six throws stand. / Где стоят столбики шести бросков. */
+    columnLayout: ColumnLayout = 'trigrams';
 
     private readonly renderer: WebGLRenderer;
     private readonly scene = new Scene();
@@ -269,7 +281,7 @@ export class TableStage {
                 state.yaw = (Math.random() - 0.5) * 2;
                 state.mesh.visible = true;
                 this.place(state, new Vector3(HOME[k]!.x, COIN_THICKNESS / 2, HOME[k]!.z), flatQuaternion(3, state.yaw));
-                state.park = new Vector3(columnX(index), (COIN_THICKNESS / 2) * PARK_SCALE, COLUMN_Z[k]!);
+                state.park = new Vector3(columnX(index, this.columnLayout), (COIN_THICKNESS / 2) * PARK_SCALE, COLUMN_Z[k]!);
                 state.plan = planToss(state.mesh.position.clone(), state.side, state.yaw, to, sides[k]!, Math.random, { turns: this.turns });
                 state.time = -k * 0.07; // the coins leave one after another
                 state.appear = 0;

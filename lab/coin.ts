@@ -32,6 +32,10 @@ $<HTMLInputElement>('turns').addEventListener('input', (event) => {
     const value = Number((event.target as HTMLInputElement).value);
     if (value > 0) stage.turns = value;
 });
+$<HTMLSelectElement>('layout').addEventListener('change', (event) => {
+    stage.columnLayout = (event.target as HTMLSelectElement).value === 'trigrams' ? 'trigrams' : 'alternate';
+    stage.reset();
+});
 $('slow').addEventListener('click', () => {
     stage.speed = 0.1;
     $<HTMLInputElement>('speed').value = '0.1';
