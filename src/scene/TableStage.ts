@@ -116,6 +116,8 @@ export interface StageTuning {
     shake: number;
     flash: number;
     ring: number;
+    /** How opaque the ring that runs out from a landing coin is, 0…1 (it was 0.85 at the start). / Насколько непрозрачно кольцо от упавшей монеты. */
+    ringOpacity: number;
     /** How strong the soft sparks over the table are, 0 (none) to 1. / Сила мягких искорок над столом, от 0 (нет) до 1. */
     sparks: number;
 }
@@ -134,6 +136,7 @@ export const DEFAULT_TUNING: Readonly<StageTuning> = {
     shake: 0,
     flash: 0.2,
     ring: 0.8,
+    ringOpacity: 0.425, // half of the first value, 0.85
     sparks: 0.55,
 };
 
@@ -422,7 +425,7 @@ export class TableStage {
                 continue;
             }
             wave.mesh.scale.setScalar((1.4 + k * 4.2) * this.tuning.ring);
-            wave.mesh.material.opacity = 0.85 * wave.strength * (1 - k) ** 1.6;
+            wave.mesh.material.opacity = this.tuning.ringOpacity * wave.strength * (1 - k) ** 1.6;
         }
         this.flashLevel *= Math.exp(-dt * 11);
         this.flash.intensity = this.flashLevel * 26;

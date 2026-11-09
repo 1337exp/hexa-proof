@@ -95,6 +95,7 @@ const KNOBS: Knob[] = [
     { key: 'shake', label: 'Camera shake', min: 0, max: 4, step: 0.1 },
     { key: 'flash', label: 'Hit flash', min: 0, max: 4, step: 0.1 },
     { key: 'ring', label: 'Hit ring size', min: 0.2, max: 3, step: 0.05 },
+    { key: 'ringOpacity', label: 'Hit ring opacity', min: 0, max: 1, step: 0.025 },
     { key: 'sparks', label: 'Sparks', min: 0, max: 1.5, step: 0.05 },
 ];
 
