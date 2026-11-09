@@ -5,7 +5,7 @@ import { changingPositions, primaryOf, relatingOf } from '../../core/hexagram';
 import { readCast, type ReadingMode } from '../../core/reading';
 import type { Cast } from '../../core/types';
 import { t } from '../i18n';
-import { answerText } from '../share';
+import { bookText, castText } from '../share';
 import { pack } from '../texts';
 import HexagramHead from './HexagramHead.vue';
 import PassageCard from './PassageCard.vue';
@@ -18,10 +18,10 @@ const relating = computed(() => relatingOf(props.cast));
 const reading = computed(() => readCast(props.cast, props.mode));
 const changing = computed(() => changingPositions(props.cast));
 
-/** Puts the answer on the clipboard as plain text, to send it to somebody or to an assistant. / Кладёт ответ в буфер простым текстом. */
-async function copy(): Promise<void> {
+/** Puts on the clipboard, as plain text, what was cast or the text of the book: to send to somebody or to an assistant. / Кладёт в буфер простым текстом, что выпало, или текст книги. */
+async function copy(what: 'cast' | 'book'): Promise<void> {
     try {
-        await navigator.clipboard.writeText(answerText(props.cast, props.question, props.mode));
+        await navigator.clipboard.writeText(what === 'cast' ? castText(props.cast, props.question) : bookText(props.cast, props.mode));
         toast().success().message(t('reading.copied'));
     } catch {
         toast().danger().message(t('reading.copyFailed'));
@@ -37,7 +37,7 @@ function setMode(value: string | number | boolean): void {
     <section class="reading" aria-labelledby="reading-title">
         <div class="reading__titlebar">
             <h2 id="reading-title" class="reading__title">{{ t('reading.title') }}</h2>
-            <TaoButton variant="ghost" tone="neutral" icon="tao-copy" :aria-label="t('reading.copy')" :title="t('reading.copy')" :disabled="!pack" @click="void copy()" />
+            <TaoButton variant="ghost" tone="neutral" icon="tao-copy" :aria-label="t('reading.copy')" :title="t('reading.copy')" @click="void copy('cast')" />
         </div>
 
         <p v-if="question.trim()" class="reading__question">
@@ -59,10 +59,13 @@ function setMode(value: string | number | boolean): void {
         <p class="reading__changing">{{ changing.length ? t('reading.changing', [changing.join(', ')]) : t('reading.noChange') }}</p>
 
         <div class="reading__mode">
-            <TaoSegmented :model-value="mode" :legend="t('reading.modeLabel')" @update:model-value="setMode">
-                <TaoSegmentedOption value="classic">{{ t('reading.modeClassic') }}</TaoSegmentedOption>
-                <TaoSegmentedOption value="all">{{ t('reading.modeAll') }}</TaoSegmentedOption>
-            </TaoSegmented>
+            <div class="reading__modebar">
+                <TaoSegmented :model-value="mode" :legend="t('reading.modeLabel')" @update:model-value="setMode">
+                    <TaoSegmentedOption value="classic">{{ t('reading.modeClassic') }}</TaoSegmentedOption>
+                    <TaoSegmentedOption value="all">{{ t('reading.modeAll') }}</TaoSegmentedOption>
+                </TaoSegmented>
+                <TaoButton variant="ghost" tone="neutral" icon="tao-copy" :aria-label="t('reading.copyText')" :title="t('reading.copyText')" :disabled="!pack" @click="void copy('book')" />
+            </div>
             <p class="reading__rule">{{ t(`reading.rule.${reading.rule}`) }}</p>
         </div>
 
@@ -143,7 +146,12 @@ function setMode(value: string | number | boolean): void {
 .reading__mode {
     display: grid;
     gap: var(--tao-space-2);
-    justify-items: start;
+}
+.reading__modebar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--tao-space-3);
 }
 .reading__rule {
     margin: 0;

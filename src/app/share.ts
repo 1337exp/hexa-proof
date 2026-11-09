@@ -5,7 +5,7 @@ import { locale, t } from './i18n';
 import { describePassage } from './passages';
 import { pack, textOf } from './texts';
 
-/** «6 Conflict (sòng · Sun; Above: Heaven · Below: Water)» */
+/** «6 Суд (sòng · Сун; Сверху: Небо · Снизу: Вода)» */
 function describeHexagram(number: number): string {
     const facts = hexagram(number);
     const book = textOf(number);
@@ -16,21 +16,28 @@ function describeHexagram(number: number): string {
 }
 
 /**
- * The answer as plain text that can be sent to a friend or to an assistant: the question, both hexagrams, the changing lines,
- * and the places of the book, in the language of the interface.
- * Ответ простым текстом, который можно отправить другу или ассистенту: вопрос, обе гексаграммы, движущиеся линии и места книги.
+ * What was cast, as plain text: the question (if one was written), the hexagram, where it leads, the changing lines. Nothing else:
+ * it is the fact of the cast, which can be sent to a friend or to an assistant as it is.
+ * Что выпало, простым текстом: вопрос (если он вписан), гексаграмма, куда она ведёт, движущиеся линии. Больше ничего: это сам факт броска.
  */
-export function answerText(cast: Cast, question: string, mode: ReadingMode): string {
-    const reading = readCast(cast, mode);
+export function castText(cast: Cast, question: string): string {
     const changing = changingPositions(cast);
     const relating = relatingOf(cast);
-    const out: string[] = [`${t('app.title')}: ${t('reading.title')}`, ''];
-
-    if (question.trim()) out.push(`${t('reading.yourQuestion')}: ${question.trim()}`);
+    const out: string[] = [];
+    if (question.trim()) out.push(`${t('reading.myQuestion')}: ${question.trim()}`);
     out.push(`${t('reading.primary')}: ${describeHexagram(primaryOf(cast).number)}`);
-    out.push(changing.length ? t('reading.changing', [changing.join(', ')]) : t('reading.noChange'));
     if (relating) out.push(`${t('reading.relating')}: ${describeHexagram(relating.number)}`);
-    out.push(t(`reading.rule.${reading.rule}`));
+    out.push(changing.length ? t('reading.changing', [changing.join(', ')]) : t('reading.noChangeShort'));
+    return out.join('\n');
+}
+
+/**
+ * The places of the book that the cast points at, in the chosen mode: the rule, the words and the commentary, with the name of the book.
+ * Места книги, на которые указывает бросок, в выбранном режиме: правило, слова и толкование, с названием книги.
+ */
+export function bookText(cast: Cast, mode: ReadingMode): string {
+    const reading = readCast(cast, mode);
+    const out: string[] = [t(`reading.rule.${reading.rule}`)];
 
     reading.passages.forEach((passage, index) => {
         const content = describePassage(passage);

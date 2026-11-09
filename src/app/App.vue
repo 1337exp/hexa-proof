@@ -160,7 +160,7 @@ onMounted(() => {
     min-height: 48px;
     padding: 0 6px;
     border: 1px solid var(--tao-color-border);
-    border-radius: var(--tao-radius-control);
+    border-radius: var(--tao-radius-panel); /* the same roundness as the bar above them */
     background: var(--tao-color-surface);
     color: var(--tao-color-text);
     font: inherit;
