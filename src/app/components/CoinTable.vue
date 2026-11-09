@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TaoButton } from '@1337exp/taoui';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { t } from '../i18n';
 import { playFlip, playTaiko, prepareSound, setSound, soundOn } from '../sound';
@@ -10,9 +11,13 @@ import type { TableStage } from '../../scene/TableStage';
  * so the pages that do not need it (the library, the book) do not carry it.
  * Стол с тремя монетами. Сцена three.js грузится, когда компонент появляется, отдельным куском: страницы, которым она не нужна, её не несут.
  */
-const emit = defineEmits<{ activate: []; unavailable: [] }>();
-/** The words under the finger; with none, the hint is not shown. / Слова под пальцем; без них подсказки нет. */
-defineProps<{ hint?: string }>();
+const emit = defineEmits<{ activate: []; action: []; unavailable: [] }>();
+/**
+ * `hint`: the words under the finger; with none, the hint is not shown.
+ * `action`: the words of the button that appears in the middle of the table when the cast is done; with none, there is no button.
+ * `hint`: слова под пальцем; без них подсказки нет. `action`: слова кнопки, которая появляется посреди стола, когда бросок закончен; без них кнопки нет.
+ */
+defineProps<{ hint?: string; action?: string }>();
 
 const host = ref<HTMLElement | null>(null);
 let stage: TableStage | null = null;
@@ -71,6 +76,12 @@ defineExpose({
                 <path v-else d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
             </svg>
         </button>
+        <!-- When the cast is done the main action stands in the middle of the table, on a pane of glass; the container lets presses through, the button takes its own. -->
+        <Transition name="action">
+            <div v-if="action" class="coin-table__action">
+                <TaoButton class="tao-surface-glass coin-table__read" variant="secondary" size="large" @click="emit('action')">{{ action }}</TaoButton>
+            </div>
+        </Transition>
         <!-- The hint lets every press through (pointer-events: none): the press lands on the table itself and throws the coins. -->
         <Transition name="hint">
             <div v-if="hint" class="coin-table__hint" aria-hidden="true">
@@ -127,6 +138,39 @@ defineExpose({
 .coin-table__sound:focus-visible {
     outline: 2px solid var(--tao-color-accent);
     outline-offset: 1px;
+}
+.coin-table__action {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+.coin-table__read {
+    pointer-events: auto;
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.55);
+}
+.action-enter-active {
+    transition:
+        opacity 0.9s ease 0.4s,
+        transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s; /* it waits a little: the wave of glow comes first */
+}
+.action-leave-active {
+    transition: opacity 0.25s ease;
+}
+.action-enter-from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+}
+.action-leave-to {
+    opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+    .action-enter-active,
+    .action-leave-active {
+        transition: none;
+    }
 }
 .coin-table__hint {
     position: absolute;

@@ -100,7 +100,7 @@ const status = computed(() => {
         <h2 id="cast-title" class="visually-hidden">{{ t('nav.cast') }}</h2>
 
         <div class="cast__stage">
-            <CoinTable v-if="!flat" ref="table" :hint="tapHint" @activate="activate" @unavailable="flat = true" />
+            <CoinTable v-if="!flat" ref="table" :hint="tapHint" :action="done ? t('cast.read') : undefined" @action="emit('read')" @activate="activate" @unavailable="flat = true" />
             <div v-else class="cast__flat" aria-live="polite">
                 <template v-if="last">
                     <CoinFace v-for="(side, index) in last.coins" :key="`${revealed}-${index}`" :side="side" :size="72" />
@@ -123,10 +123,11 @@ const status = computed(() => {
         </div>
 
         <div class="cast__actions">
-            <!-- the coins are thrown by a press on the table or the space bar, so there is no button for one throw -->
-            <TaoButton v-if="done" variant="primary" @click="emit('read')">{{ t('cast.read') }}</TaoButton>
-            <TaoButton v-else variant="secondary" :disabled="busy" @click="throwAll()">{{ t('cast.throwAll') }}</TaoButton>
-            <TaoButton v-if="throws.length" variant="ghost" tone="neutral" @click="void startOver()">{{ t('cast.reset') }}</TaoButton>
+            <!-- the coins are thrown by a press on the table or the space bar, so there is no button for one throw; «read» stands on the table.
+                 The buttons do not come and go (the page would jump), they are switched off. Without the table (no WebGL) «read» stands here. -->
+            <TaoButton v-if="flat && done" variant="primary" @click="emit('read')">{{ t('cast.read') }}</TaoButton>
+            <TaoButton variant="secondary" :disabled="busy || done" @click="throwAll()">{{ t('cast.throwAll') }}</TaoButton>
+            <TaoButton variant="ghost" tone="neutral" :disabled="!throws.length" @click="void startOver()">{{ t('cast.reset') }}</TaoButton>
         </div>
     </section>
 </template>
