@@ -42,6 +42,17 @@ if (process.argv.includes('--report')) {
     }
 }
 
+// Three places are wrong in the source against the Chinese original (and Legge): they are mended, and the mending is told to the reader by a `note`.
+// Три места в источнике неверны против китайского оригинала (и Легга): они исправлены, и об исправлении читателю говорит `note`.
+for (const { where, from, to, note } of overrides.fixes ?? []) {
+    const [number, position] = where.split('.').map(Number);
+    const hexagram = hexagrams[number - 1];
+    const target = position ? hexagram?.lines[position - 1] : hexagram?.judgment;
+    if (!target?.text.includes(from)) throw new Error(`overrides.fixes ${where}: the words «${from}» are not there`);
+    target.text = target.text.replace(from, to);
+    target.note = note;
+}
+
 const pack = {
     lang: 'ru',
     source: {

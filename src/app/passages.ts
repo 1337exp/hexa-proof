@@ -15,6 +15,8 @@ export interface PassageContent {
     comment?: string;
     symbol?: string;
     image?: string;
+    /** Where the words were mended against the original. / Где слова исправлены по оригиналу. */
+    note?: string;
 }
 
 /** Null while the pack of the book is not loaded. / Null, пока пакет книги не загружен. */
@@ -22,7 +24,7 @@ export function describePassage(passage: Passage): PassageContent | null {
     const book = textOf(passage.hexagram);
     if (!book) return null;
     if (passage.kind === 'judgment') {
-        return { title: t('passage.judgmentOf', [book.name]), text: book.judgment?.text ?? '', comment: book.judgment?.comment, image: book.image?.text };
+        return { title: t('passage.judgmentOf', [book.name]), text: book.judgment?.text ?? '', comment: book.judgment?.comment, image: book.image?.text, note: book.judgment?.note };
     }
     if (passage.kind === 'useAll') {
         const yang = hexagram(passage.hexagram).lines[0] === '1';
@@ -36,5 +38,6 @@ export function describePassage(passage: Passage): PassageContent | null {
         text: line?.text ?? '',
         comment: line?.comment,
         symbol: line?.symbol,
+        note: line?.note,
     };
 }

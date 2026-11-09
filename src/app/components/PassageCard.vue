@@ -23,6 +23,7 @@ const content = computed(() => describePassage(props.passage));
         <small v-if="content.kind" class="passage__kind">{{ content.kind }}</small>
         <blockquote v-if="content.text" class="passage__words">{{ content.text }}</blockquote>
         <p v-else class="passage__gap">{{ t('passage.gap') }}</p>
+        <p v-if="content.note" class="passage__note">{{ content.note }}</p>
         <p v-if="content.symbol" class="passage__symbol">{{ content.symbol }}</p>
         <div v-if="content.image" class="passage__image">
             <small>{{ t('passage.image') }}</small>
@@ -75,6 +76,12 @@ const content = computed(() => describePassage(props.passage));
     color: var(--tao-color-text-strong);
 }
 .passage__gap,
+.passage__note {
+    margin: 0;
+    color: var(--hx-bronze-light);
+    font-size: 13px;
+    font-style: italic;
+}
 .passage__symbol {
     margin: 0;
     color: var(--tao-color-text-muted);

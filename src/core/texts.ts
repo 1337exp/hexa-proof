@@ -13,12 +13,16 @@ export interface LineText {
     comment?: string;
     /** The small symbolism of the line (Legge, appendix II). / Малый образ линии. */
     symbol?: string;
+    /** A word to the reader, where the words were mended against the original. / Слово читателю там, где слова исправлены по оригиналу. */
+    note?: string;
 }
 
 /** The verdict (the judgment) or the closing remark: the words and the explanation. / Приговор или заключение: слова и толкование. */
 export interface WordsText {
     text: string;
     comment?: string;
+    /** A word to the reader, where the words were mended against the original. / Слово читателю там, где слова исправлены по оригиналу. */
+    note?: string;
 }
 
 export interface HexagramText {

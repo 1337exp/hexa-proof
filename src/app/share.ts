@@ -46,6 +46,7 @@ export function bookText(cast: Cast, mode: ReadingMode): string {
         out.push('', `## ${content.title}${main}`);
         if (content.kind) out.push(content.kind);
         out.push(content.text ? `«${content.text}»` : t('passage.gap'));
+        if (content.note) out.push(`(${content.note})`);
         if (content.symbol) out.push(content.symbol);
         if (content.image) out.push(`${t('passage.image')}: ${content.image}`);
         if (content.comment) out.push('', `${t('passage.comment')}: ${content.comment}`);

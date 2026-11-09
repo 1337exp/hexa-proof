@@ -142,12 +142,24 @@ describe('what the review of the packs found', () => {
         expect(cut).toEqual([]);
     });
 
-    it('keeps the words of the author where the source itself is wrong (not mended silently)', () => {
-        // 62: «Не следует подыматься. Следует подыматься. Следует опускаться.»: a sentence too many (the Chinese: do not ascend, descend)
-        expect(ru.hexagrams[61]!.judgment!.text).toContain('Не следует подыматься. Следует подыматься. Следует опускаться.');
-        // 40.2 and 64.5: the words of the line say «sad» / «misfortune» where the line (and Legge) say good fortune
-        expect(ru.hexagrams[39]!.lines[1]!.text).toContain('Стойкость — к сожалению.');
-        expect(ru.hexagrams[63]!.lines[4]!.text).toMatch(/^Стойкость — к несчастью\./);
+    it('mends the three places that are wrong in the source against the Chinese original, and tells the reader so', () => {
+        // 62 不宜上宜下: do not ascend, descend (the source had a sentence too many)
+        const j62 = ru.hexagrams[61]!.judgment!;
+        expect(j62.text).toContain('Не следует подыматься. Следует опускаться.');
+        expect(j62.text).not.toContain('Следует подыматься.');
+        expect(j62.note).toMatch(/китайскому тексту/);
+        // 40.2 貞吉 and 64.5 貞吉: firmness brings good fortune (the source said «к сожалению» and «к несчастью»)
+        const l402 = ru.hexagrams[39]!.lines[1]!;
+        expect(l402.text).toMatch(/Стойкость — к счастью\.$/);
+        expect(l402.note).toMatch(/китайскому тексту/);
+        const l645 = ru.hexagrams[63]!.lines[4]!;
+        expect(l645.text).toMatch(/^Стойкость — к счастью\./);
+        expect(l645.note).toMatch(/китайскому тексту/);
+        // 40.3 貞吝 stays «к сожалению»: it is right there
+        expect(ru.hexagrams[39]!.lines[2]!.text).toMatch(/Стойкость — к сожалению\.$/);
+        // and nothing else carries a note
+        const noted = ru.hexagrams.flatMap((h) => [h.judgment?.note, ...h.lines.map((l) => l.note)]).filter(Boolean);
+        expect(noted).toHaveLength(3);
     });
 
     it('has the circumflex in the name of the 27th hexagram and the repaired places of Legge', () => {
