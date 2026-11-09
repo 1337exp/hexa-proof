@@ -80,3 +80,35 @@ for (const { lang, gaps, image } of PACKS) {
         });
     });
 }
+
+/**
+ * The Russian book names every line ("В начале слабая черта", "Сильная черта на втором месте"). That name must agree with the table of facts:
+ * the place with the position of the line and the kind (strong = solid, weak = broken) with the figure itself. The two come from different
+ * sources, so a mismatch means a line is in the wrong place or the wrong hexagram.
+ * Русская книга называет каждую линию. Название должно совпадать с таблицей фактов: место с позицией, вид (сильная — сплошная, слабая — прерывистая)
+ * с самой фигурой. Они из разных источников, поэтому расхождение значит, что линия не на своём месте или не в той гексаграмме.
+ */
+describe('the labels of the ru lines agree with the table of facts', () => {
+    const PLACES = ['в начале', 'на втором', 'на третьем', 'на четвертом', 'на пятом', 'наверху'];
+    let problems: string[];
+
+    beforeAll(async () => {
+        const { HEXAGRAMS } = await import('../src/data/hexagrams');
+        const pack = JSON.parse(readFileSync(new URL('../src/data/texts/ru.json', import.meta.url), 'utf8')) as TextPack;
+        problems = [];
+        pack.hexagrams.forEach((h, i) => {
+            h.lines.forEach((line, k) => {
+                const label = (line.label ?? '').toLowerCase().replace(/ё/g, 'е');
+                if (!label.includes(PLACES[k]!)) problems.push(`${i + 1}.${k + 1}: place in «${line.label}»`);
+                const solid = label.includes('сильн');
+                const broken = label.includes('слаб');
+                if (solid === broken) problems.push(`${i + 1}.${k + 1}: no kind in «${line.label}»`);
+                else if (solid !== (HEXAGRAMS[i]!.lines[k] === '1')) problems.push(`${i + 1}.${k + 1}: «${line.label}» against the figure ${HEXAGRAMS[i]!.lines}`);
+            });
+        });
+    });
+
+    it('has no line with another place or another kind than the figure says', () => {
+        expect(problems).toEqual([]);
+    });
+});

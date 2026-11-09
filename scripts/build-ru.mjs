@@ -20,6 +20,15 @@ const { about, hexagrams, warnings, leads } = parseShchutsky(decodeWin1251(readF
 
 for (const warning of warnings) console.warn(`warning: ${warning}`);
 
+// The book names four lines wrongly: «слабая черта» where the line is solid (the words of the line and Legge agree with the figure, only the label is a
+// typo of the source). The labels are mended here and pinned by tests/texts.test.ts. / Книга неверно называет четыре линии: «слабая», где линия сплошная.
+for (const [where, label] of Object.entries(overrides.labels ?? {})) {
+    const [number, position] = where.split('.').map(Number);
+    const line = hexagrams[number - 1]?.lines[position - 1];
+    if (!line) console.warn(`warning: overrides.labels ${where}: no such line`);
+    else line.label = label;
+}
+
 if (process.argv.includes('--leads')) {
     // The sentences cut off before the classic words: the long ones may carry meaning and need a look.
     for (const { where, lead } of leads.filter((item) => item.lead.length > 90)) console.log(`${where} (${lead.length}): ${lead}`);
