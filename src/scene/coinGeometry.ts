@@ -2,7 +2,7 @@ import { ExtrudeGeometry, Path, Shape } from 'three';
 import { COIN_RADIUS, COIN_THICKNESS } from './tossPlan';
 
 /** Half of the side of the square hole. / Половина стороны квадратного отверстия. */
-export const HOLE_HALF = 0.19;
+export const HOLE_HALF = 0.158;
 
 /**
  * A cash coin: a disc with a square hole, a little bevel on the rim. Lies flat: the thickness is along Y, the face of the yang
