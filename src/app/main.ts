@@ -1,4 +1,5 @@
 import '@1337exp/taoui/styles.css';
+import '../assets/font/roboto.css';
 import { createApp } from 'vue';
 import App from './App.vue';
 import { initI18n } from './i18n';

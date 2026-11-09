@@ -13,9 +13,15 @@ The code of this project is MIT (see `LICENSE`). The books below are not part of
 ## Ю. К. Щуцкий, «Китайская классическая Книга перемен»
 
 - Source / Источник: the text of the book from the Royallib library (the file is kept only on our machines, in `sources/`). The Russian pack (`src/data/texts/ru.json`) is made from it.
-- Status: **to check before a public release.** Yu. K. Shchutsky was shot in 1938 and rehabilitated after his death; under Russian law the term of protection of a repressed and posthumously rehabilitated author runs 70 years from 1 January of the year after the rehabilitation. The year of the rehabilitation is not confirmed yet (we believe 1956, which would end the protection on 31 December 2026). Until it is checked the Russian pack must not go into a public repository. This is not legal advice.
-- Статус: **проверить перед публикацией.** Щуцкий расстрелян в 1938, реабилитирован посмертно; срок охраны у репрессированного и посмертно реабилитированного автора идёт 70 лет с 1 января года, следующего за годом реабилитации. Год реабилитации не подтверждён (считаем, что 1956, тогда охрана кончается 31 декабря 2026). До проверки русский пакет в публичный репозиторий не выкладывать.
+- Status: **in the public domain from 1 January 2027; do not publish before that date.** Yu. K. Shchutsky was shot on 18 February 1938 and rehabilitated after his death in 1956. Under Russian law (art. 1281 of the Civil Code) the term of protection of a repressed and posthumously rehabilitated author runs 70 years from 1 January of the year after the rehabilitation, i.e. from 1 January 1957, and ends on 31 December 2026. Until then the repository stays private (the pack is committed locally only). This is our reading of the law, not legal advice.
+- Статус: **общественное достояние с 1 января 2027; до этой даты не публиковать.** Щуцкий расстрелян 18 февраля 1938, реабилитирован посмертно в 1956. По ст. 1281 ГК РФ срок охраны репрессированного и посмертно реабилитированного автора идёт 70 лет с 1 января года, следующего за годом реабилитации, то есть с 1 января 1957, и кончается 31 декабря 2026. До тех пор репозиторий остаётся закрытым (пакет лежит только в локальном коммите). Это наше прочтение закона, не юридическая консультация.
 - Defects of the file are listed in `docs/texts.md`; the pack corrects none of the words of the author, it only cuts the book into parts.
+
+## Roboto
+
+- Source: the package `@fontsource-variable/roboto` 5.3.0, the variable font (weight 100–900), Latin and Cyrillic subsets, normal and italic, in `src/assets/font`.
+- Licence: SIL Open Font License 1.1, the text is in `src/assets/font/LICENSE.txt`. The files are unchanged.
+- Шрифт Roboto (переменный, латиница и кириллица), лицензия SIL OFL 1.1, файлы без изменений; взяты из проекта next-up.
 
 ## Not used / Не используем
 
