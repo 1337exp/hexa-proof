@@ -2,7 +2,7 @@ import { startLoop, type Loop } from '@1337exp/pkt-threejs-blueprint/loop';
 import { bindResize, createRenderer } from '@1337exp/pkt-threejs-blueprint/renderer';
 import { disposeObject } from '@1337exp/pkt-threejs-blueprint/dispose';
 import {
-    NoToneMapping,
+    ACESFilmicToneMapping,
     AdditiveBlending,
     AmbientLight,
     Color,
@@ -30,6 +30,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import type { Coin, Coins } from '../core/cast';
 import { createCoinGeometry } from './coinGeometry';
@@ -139,8 +140,10 @@ export class TableStage {
 
     constructor(container: HTMLElement, options: TableStageOptions = {}) {
         this.renderer = createRenderer(container, { antialias: true });
-        this.renderer.toneMapping = NoToneMapping; // the picture of the table must keep its colours; the bloom pass tone-maps the whole frame
-        this.renderer.toneMappingExposure = 1;
+        // The tone mapping is applied to the whole frame, the picture of the table too: it makes the table dark and deep, and that is the look we want.
+        // Тонмаппинг ложится на весь кадр, на картинку стола тоже: стол выходит тёмным и глубоким, это нужный нам вид.
+        this.renderer.toneMapping = ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 0.95;
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = PCFSoftShadowMap;
         this.renderer.domElement.style.width = '100%';
@@ -154,6 +157,25 @@ export class TableStage {
         this.bloom.enabled = false;
         this.composer.addPass(this.bloom);
         this.composer.addPass(new OutputPass());
+        // the vignette: the corners go dark, as if the table were lit by one lamp in the middle
+        this.composer.addPass(
+            new ShaderPass({
+                uniforms: { tDiffuse: { value: null }, strength: { value: 0.85 }, softness: { value: 0.62 } },
+                vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+                fragmentShader: `
+                    uniform sampler2D tDiffuse;
+                    uniform float strength;
+                    uniform float softness;
+                    varying vec2 vUv;
+                    void main() {
+                        vec4 color = texture2D(tDiffuse, vUv);
+                        vec2 p = (vUv - 0.5) * vec2(1.25, 1.0);
+                        float edge = smoothstep(softness * 0.35, softness * 1.05, length(p));
+                        color.rgb *= 1.0 - strength * edge;
+                        gl_FragColor = color;
+                    }`,
+            }),
+        );
         this.unbind = bindResize(this.renderer, container, (width, height) => this.layout(width, height), { updateStyle: false });
         if (options.onActivate) this.renderer.domElement.addEventListener('pointerdown', options.onActivate);
 

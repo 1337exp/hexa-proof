@@ -50,12 +50,4 @@ defineExpose({
     background: #0e0907;
     cursor: pointer;
 }
-.coin-table::after {
-    /* the glow of the lamp on the edges of the picture: a soft vignette */
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(8, 4, 2, 0.55) 100%);
-}
 </style>
