@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { t } from '../i18n';
-import { playFlip, playTaiko, prefetchSound, setSound, soundOn } from '../sound';
+import { playFlip, playTaiko, prepareSound, setSound, soundOn } from '../sound';
 import type { Coins } from '../../core/cast';
 import type { TableStage } from '../../scene/TableStage';
 
@@ -16,30 +16,46 @@ defineProps<{ hint?: string }>();
 
 const host = ref<HTMLElement | null>(null);
 let stage: TableStage | null = null;
+/**
+ * Resolves with the stage when it stands, or with null when there will be none (no WebGL, or the component is gone). A press that comes while the
+ * stage is still loading waits for it: it must not count in the cast and be lost on the table.
+ * Станет стадией, когда она встанет, или null, если её не будет. Нажатие, пришедшее, пока сцена грузится, ждёт её: оно не должно засчитаться
+ * в броске и пропасть на столе.
+ */
+let settle!: (value: TableStage | null) => void;
+const ready = new Promise<TableStage | null>((resolve) => (settle = resolve));
 
 onMounted(async () => {
-    prefetchSound(); // the sounds come while the table loads
+    prepareSound(); // the sounds are fetched and decoded while the table loads
     try {
         const { TableStage: Stage } = await import('../../scene/TableStage');
-        if (!host.value) return;
+        if (!host.value) return settle(null);
         stage = new Stage(host.value, { onActivate: () => emit('activate'), onGlow: playTaiko });
+        settle(stage);
     } catch {
         // no WebGL (or no 2D canvas): the screen falls back to the flat coins
+        settle(null);
         emit('unavailable');
     }
 });
 
 onBeforeUnmount(() => {
+    settle(null);
     stage?.dispose();
     stage = null;
 });
 
 defineExpose({
-    /** Plays the toss; resolves when the coins lie still. Without a stage it resolves at once. / Разыгрывает бросок; без сцены завершается сразу. */
-    toss: (sides: Coins, instant = false): Promise<void> => {
-        if (!stage) return Promise.resolve();
-        if (!instant) playFlip(stage.speed); // the clink of the landing falls on the landing at the speed of the table
-        return stage.toss(sides, { instant });
+    /**
+     * Plays the toss of the line `index` (0…5); resolves when the coins lie still. It waits for the stage if it is still loading, and resolves
+     * at once when there will be none.
+     * Разыгрывает бросок линии `index` (0…5); завершается, когда монеты улеглись. Ждёт сцену, если она ещё грузится, а когда её не будет, завершается сразу.
+     */
+    toss: async (sides: Coins, instant = false, index?: number): Promise<void> => {
+        const current = await ready;
+        if (!current || current !== stage) return;
+        if (!instant) playFlip(current.speed); // the clink of the landing falls on the landing at the speed of the table
+        return current.toss(sides, { instant, index });
     },
     reset: (): void => stage?.reset(),
 });

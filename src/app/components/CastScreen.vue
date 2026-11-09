@@ -45,7 +45,7 @@ async function throwOne(): Promise<void> {
     busy.value = true;
     unlockSound(); // the throw comes from a press: the browser lets the sound start now
     const next = throwNext();
-    if (next) await table.value?.toss(next.coins, reducedMotion());
+    if (next) await table.value?.toss(next.coins, reducedMotion(), throws.value.length - 1);
     revealed.value = throws.value.length;
     busy.value = false;
 }
@@ -108,7 +108,7 @@ const status = computed(() => {
             </div>
 
             <div class="cast__question">
-                <TaoTextarea id="cast-question" v-model="question" :aria-label="t('cast.questionLabel')" :rows="2" :maxlength="300" :placeholder="t('cast.questionPlaceholder')" />
+                <TaoTextarea id="cast-question" v-model="question" :aria-label="t('cast.questionLabel')" :rows="3" :maxlength="300" :placeholder="t('cast.questionPlaceholder')" />
             </div>
 
             <div class="cast__info">

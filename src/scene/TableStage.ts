@@ -457,13 +457,16 @@ export class TableStage {
     /**
      * Throws the next three coins so that they fall on the given sides: they fall in the middle, then slide aside into a column
      * (the columns go left, right, left, right…). Resolves when the coins stand in their column. After the sixth throw it starts again.
-     * With `instant` the coins are just put where they end up (for a person who asked for less motion).
+     * With `instant` the coins are just put where they end up (for a person who asked for less motion). `index` is the number of the throw, 0…5:
+     * the table follows the application and does not keep a count of its own.
      * Бросает следующие три монеты так, чтобы они легли на заданные стороны: падают посередине, потом сдвигаются в столбик (влево, вправо…).
      * Завершается, когда монеты встали в столбик. После шестого броска начинает заново. С `instant` монеты просто ставятся на место.
      */
-    toss(sides: Coins, options: { instant?: boolean } = {}): Promise<void> {
+    toss(sides: Coins, options: { instant?: boolean; index?: number } = {}): Promise<void> {
         this.finish();
         if (this.throwIndex >= THROWS) this.reset();
+        // the application says which throw this is (0…5): the table must never count for itself, or it can drift away from the cast
+        if (options.index !== undefined) this.throwIndex = Math.min(Math.max(Math.trunc(options.index), 0), THROWS - 1);
         const index = this.throwIndex++;
         const group = this.coins.slice(index * 3, index * 3 + 3);
         this.latest = group;
