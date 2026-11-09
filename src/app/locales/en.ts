@@ -22,7 +22,7 @@ export const en = {
         read: 'Read the answer',
         progress: 'Line {0} of 6',
         next: 'Next: line {0} (from the bottom)',
-        done: 'The hexagram is complete',
+        done: 'Hexagram {0}',
         coin: { yang: 'yang', yin: 'yin' },
         line: {
             v6: 'old yin — it changes',

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { confirm, TaoButton, TaoTextarea } from '@1337exp/taoui';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { primaryOf } from '../../core/hexagram';
 import type { LineValue } from '../../core/types';
 import { t } from '../i18n';
 import { cast, question, reset as resetThrows, throwNext, throws } from '../session';
@@ -90,7 +91,7 @@ onBeforeUnmount(() => {
 });
 
 const status = computed(() => {
-    if (done.value) return t('cast.done');
+    if (done.value && cast.value) return t('cast.done', [primaryOf(cast.value).number]); // the number of the hexagram that was cast
     return busy.value ? t('cast.progress', [throws.value.length]) : t('cast.next', [revealed.value + 1]);
 });
 </script>
