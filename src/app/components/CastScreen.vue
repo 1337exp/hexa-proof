@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TaoButton, TaoTextarea } from '@1337exp/taoui';
+import { confirm, TaoButton, TaoTextarea } from '@1337exp/taoui';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { LineValue } from '../../core/types';
 import { t } from '../i18n';
@@ -41,7 +41,10 @@ async function throwAll(): Promise<void> {
     }
 }
 
-function startOver(): void {
+async function startOver(): Promise<void> {
+    // a throw of the coins cannot be taken back, and one press by mistake must not cost the person the whole cast
+    const sure = await confirm().title(t('cast.resetTitle')).message(t('cast.resetMessage')).ok(t('cast.resetOk')).cancel(t('cast.resetKeep')).danger();
+    if (!sure) return;
     cancelled = true;
     resetThrows();
     revealed.value = 0;
@@ -107,7 +110,7 @@ const status = computed(() => {
             <TaoButton v-if="!done" variant="primary" :disabled="busy" @click="throwOne()">{{ t('cast.throw') }}</TaoButton>
             <TaoButton v-else variant="primary" @click="emit('read')">{{ t('cast.read') }}</TaoButton>
             <TaoButton v-if="!done" variant="secondary" :disabled="busy" @click="throwAll()">{{ t('cast.throwAll') }}</TaoButton>
-            <TaoButton v-if="throws.length" variant="ghost" tone="neutral" @click="startOver()">{{ t('cast.reset') }}</TaoButton>
+            <TaoButton v-if="throws.length" variant="ghost" tone="neutral" @click="void startOver()">{{ t('cast.reset') }}</TaoButton>
         </div>
     </section>
 </template>
@@ -140,19 +143,31 @@ const status = computed(() => {
     border-radius: var(--tao-radius-panel);
     background: var(--hx-table);
 }
+/* The figure and its text stay in one row: when the room is short the gap and the text become smaller, and the text wraps, but it never drops under the figure. */
 .cast__info {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--tao-space-6);
+    flex-wrap: nowrap;
+    gap: clamp(10px, 3.2vw, var(--tao-space-6));
     align-items: center;
+}
+.cast__figure {
+    flex: 0 0 clamp(76px, 24vw, 120px);
+}
+.cast__figure :deep(svg) {
+    width: 100%;
+    height: auto;
 }
 .cast__text {
     display: grid;
     gap: 2px;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 .cast__thrown {
     margin: 0;
     color: var(--tao-color-text);
+    font-size: clamp(13px, 3.7vw, 16px);
+    line-height: 1.35;
 }
 .cast__progress {
     color: var(--tao-color-text-muted);

@@ -17,6 +17,10 @@ export const en = {
         throw: 'Throw the coins',
         throwAll: 'All six at once',
         reset: 'Start over',
+        resetTitle: 'Start over?',
+        resetMessage: 'The coins already thrown and the lines they gave will be lost.',
+        resetOk: 'Start over',
+        resetKeep: 'Keep them',
         read: 'Read the answer',
         progress: 'Line {0} of 6',
         next: 'Next: line {0} (from the bottom)',
@@ -44,6 +48,8 @@ export const en = {
         modeAll: 'Everything',
         ruleTitle: 'Why these places',
         again: 'Cast again',
+        againTitle: 'Cast again?',
+        againMessage: 'This answer will be lost: it is not saved anywhere yet.',
         saved: 'Saved to the journal',
         rule: {
             none: 'No line is changing, so the judgment of the hexagram is the answer.',
@@ -91,6 +97,9 @@ export const en = {
         sourceRu: 'Russian: Yu. K. Shchutsky, The Chinese Classical Book of Changes. His explanation of the figure and of every line, with the classic words inside it.',
         introTitle: 'From the introduction of the book',
         notice: 'This is a reading aid, not advice. Decisions about health, money and law are for you and the right professionals.',
+    },
+    footer: {
+        homepage: 'Homepage',
     },
     texts: {
         author: 'Text: {0}',

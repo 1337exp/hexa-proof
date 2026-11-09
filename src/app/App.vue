@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TaoSegmented, TaoSegmentedOption, TaoTabs, TaoThemeToggle } from '@1337exp/taoui';
+import { confirm, TaoSegmented, TaoSegmentedOption, TaoTabs, TaoThemeToggle } from '@1337exp/taoui';
 import { onMounted, ref } from 'vue';
 import AboutView from './components/AboutView.vue';
 import CastScreen from './components/CastScreen.vue';
@@ -30,7 +30,8 @@ function setLanguage(value: string | number | boolean): void {
     if (i18n.isLocaleCode(code)) i18n.setLocale(code);
 }
 
-function again(): void {
+async function again(): Promise<void> {
+    if (!(await confirm().title(t('reading.againTitle')).message(t('reading.againMessage')).ok(t('reading.again')).danger())) return;
     reset();
     reading.value = false;
 }
@@ -42,7 +43,7 @@ onMounted(startPackLoading);
     <div class="app">
         <header class="app__header">
             <div class="app__brand">
-                <h1 class="app__title">{{ t('app.title') }}</h1>
+                <h1 class="visually-hidden">{{ t('app.title') }}</h1>
                 <p class="app__tagline">{{ t('app.tagline') }}</p>
             </div>
             <div class="app__tools">
@@ -60,12 +61,16 @@ onMounted(startPackLoading);
 
         <main class="app__main">
             <template v-if="view === 'cast'">
-                <ReadingView v-if="reading && cast" :cast="cast" :question="question" :mode="readingMode" @update:mode="setReadingMode" @again="again" />
+                <ReadingView v-if="reading && cast" :cast="cast" :question="question" :mode="readingMode" @update:mode="setReadingMode" @again="void again()" />
                 <CastScreen v-else @read="reading = true" />
             </template>
             <LibraryView v-else-if="view === 'library'" />
             <AboutView v-else />
         </main>
+
+        <footer class="app__footer">
+            {{ t('footer.homepage') }}: <a href="https://666.io" target="_blank" rel="noopener">666.io</a>
+        </footer>
     </div>
 </template>
 
@@ -83,6 +88,27 @@ onMounted(startPackLoading);
     gap: var(--tao-space-4);
     align-items: flex-start;
     justify-content: space-between;
+}
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+.app__footer {
+    margin-top: var(--tao-space-6);
+    padding-top: var(--tao-space-4);
+    border-top: 1px solid var(--tao-color-border);
+    text-align: center;
+    color: var(--tao-color-text-muted);
+}
+.app__footer a {
+    color: var(--tao-color-text);
+}
+.app__footer a:hover {
+    color: var(--tao-color-text-strong);
 }
 .app__title {
     margin: 0;
