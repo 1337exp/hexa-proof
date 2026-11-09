@@ -16,6 +16,11 @@ const RULES = ['none', 'one', 'two', 'three', 'four', 'five', 'six'] as const;
         </div>
 
         <div class="about__block">
+            <h3>{{ t('about.marks') }}</h3>
+            <p>{{ t('about.marksText') }}</p>
+        </div>
+
+        <div class="about__block">
             <h3>{{ t('about.rules') }}</h3>
             <ul>
                 <li v-for="rule in RULES" :key="rule">{{ t(`reading.rule.${rule}`) }}</li>

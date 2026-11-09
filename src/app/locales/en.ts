@@ -99,6 +99,9 @@ export const en = {
         how: 'How it works',
         howText:
             'You throw three coins six times. Each throw gives one line, from the bottom of the figure up: three tails or three heads make an old line, which changes into its opposite; the other throws make lines that stay. The six lines are a hexagram, and the changing ones lead to a second hexagram. The application does not interpret anything: it only shows the places of the classic book that the cast points at.',
+        marks: 'What the circle and the cross mean',
+        marksText:
+            'Most lines are quiet: they stay as they are. Some are old, ripe, and about to turn into their opposite; they carry a mark at the right edge of the figure. A circle (○) is an old solid line: it is full, and it is about to break in two. A cross (×) is an old broken line: it is about to close into one. There are usually one or two such lines in a cast, and sometimes none. When there are, the cast has a second hexagram, the same figure with these lines turned over: the first one tells where you are, the second where it leads.',
         rules: 'How the places are chosen',
         sources: 'The books',
         sourceEn: 'English: James Legge, The Yî King (1882, public domain). The verdict, the lines and the image of every hexagram.',
