@@ -84,10 +84,10 @@ onMounted(() => {
              the three sections are tiles of equal width, easy to hit with a thumb. Nothing sticks: it all scrolls away with the page. -->
         <header class="app__bar">
             <div class="app__top">
+                <a class="app__home" href="https://666.io" target="_blank" rel="noopener">666.io</a>
                 <button type="button" class="app__tab" :class="{ active: view === 'about' }" :aria-current="view === 'about' ? 'page' : undefined" @click="setView('about')">
                     {{ t('nav.about') }}
                 </button>
-                <a class="app__home" href="https://666.io" target="_blank" rel="noopener">666.io</a>
                 <div class="app__tools">
                     <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
                         <TaoSegmentedOption value="en">EN</TaoSegmentedOption>
@@ -154,16 +154,15 @@ onMounted(() => {
     gap: 8px;
 }
 .app__home {
-    margin-inline-end: auto; /* the book and the address stay on the left, the switches on the right */
-    padding: 0 6px;
-    color: var(--tao-color-text-muted);
-    font-size: 13px;
+    padding: 0 6px 0 4px;
+    color: var(--tao-color-text-strong); /* the address is the name of the page: it stands first */
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     text-decoration: none;
-    opacity: 0.8;
 }
 .app__home:hover {
-    color: var(--tao-color-text-strong);
-    opacity: 1;
+    color: var(--tao-color-accent);
 }
 .app__home:focus-visible {
     outline: 2px solid var(--tao-color-accent);
@@ -195,6 +194,7 @@ onMounted(() => {
     color: var(--tao-color-accent);
 }
 .app__tab {
+    margin-inline-end: auto; /* the address and the book stay on the left, the switches on the right */
     display: inline-flex;
     align-items: center;
     min-height: var(--tao-control-height);
