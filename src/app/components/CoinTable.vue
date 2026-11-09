@@ -20,6 +20,8 @@ const emit = defineEmits<{ activate: []; action: []; unavailable: [] }>();
 defineProps<{ hint?: string; action?: string }>();
 
 const host = ref<HTMLElement | null>(null);
+/** The button has appeared in full: now its blur may come. / Кнопка проявилась целиком: теперь можно включать блюр. */
+const settled = ref(false);
 let stage: TableStage | null = null;
 /**
  * Resolves with the stage when it stands, or with null when there will be none (no WebGL, or the component is gone). A press that comes while the
@@ -76,11 +78,12 @@ defineExpose({
                 <path v-else d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
             </svg>
         </button>
-        <!-- When the cast is done the main action stands in the middle of the table, golden; the container lets presses through, the button takes its own.
-             It is not glass: a blur behind an element whose opacity changes does not hold until the fade is over, and the button would show it. -->
-        <Transition name="action">
+        <!-- When the cast is done the main action stands in the middle of the table: a translucent golden button. A blur behind an element whose opacity changes
+             does not hold until the fade is over, so while the button fades in it has no blur at all, and the glass is switched on (and itself fades in) when
+             the fade is over. The container lets presses through, the button takes its own. -->
+        <Transition name="action" @after-enter="settled = true" @before-leave="settled = false">
             <div v-if="action" class="coin-table__action">
-                <TaoButton class="coin-table__read" variant="primary" size="large" @click="emit('action')">{{ action }}</TaoButton>
+                <TaoButton class="coin-table__read" :class="{ 'coin-table__read--glass': settled }" variant="primary" size="large" @click="emit('action')">{{ action }}</TaoButton>
             </div>
         </Transition>
         <!-- The hint lets every press through (pointer-events: none): the press lands on the table itself and throws the coins. -->
@@ -148,12 +151,27 @@ defineExpose({
     place-items: center;
     pointer-events: none;
 }
-.coin-table__read {
+.coin-table .coin-table__read {
     pointer-events: auto;
     border: 0;
+    background: rgba(255, 190, 80, 0.62);
+    color: #fff4de;
+    -webkit-backdrop-filter: blur(0);
+    backdrop-filter: blur(0);
+    transition:
+        backdrop-filter 0.7s ease,
+        -webkit-backdrop-filter 0.7s ease,
+        background-color 0.2s ease;
     box-shadow:
         0 6px 24px rgba(0, 0, 0, 0.5),
-        0 0 26px rgba(255, 183, 70, 0.28); /* a faint golden glow, like the coins */
+        0 0 26px rgba(255, 183, 70, 0.25); /* a faint golden glow, like the coins */
+}
+.coin-table .coin-table__read--glass {
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+.coin-table .coin-table__read:hover {
+    background: rgba(255, 196, 96, 0.76);
 }
 .action-enter-active {
     transition:
