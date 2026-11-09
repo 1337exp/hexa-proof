@@ -35,6 +35,8 @@ export const en = {
         },
         figure: 'The hexagram, built from the bottom line up',
         hintStart: 'Press the table or the space bar to throw the coins.',
+        tapTable: 'Tap the table',
+        clickTable: 'Click the table',
         justThrown: 'Line {0}: {1}',
     },
     reading: {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { confirm, TaoButton, TaoTextarea } from '@1337exp/taoui';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { LineValue } from '../../core/types';
 import { t } from '../i18n';
 import { cast, question, reset as resetThrows, throwNext, throws } from '../session';
@@ -23,6 +23,21 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
 const values = computed<(LineValue | null)[]>(() => Array.from({ length: 6 }, (_, k) => (k < revealed.value ? (throws.value[k]?.value ?? null) : null)));
 const last = computed(() => (revealed.value ? (throws.value[revealed.value - 1] ?? null) : null));
 const done = computed(() => revealed.value === 6 && cast.value !== null);
+
+// The finger over the table: it shows before the first throw, and comes back when the table has been quiet for a while in the middle of a cast.
+// Палец над столом: виден до первого броска и возвращается, если посреди гадания стол долго молчит.
+const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+const IDLE_MS = 6000;
+const idle = ref(false);
+let idleTimer: ReturnType<typeof setTimeout> | undefined;
+
+watch([busy, revealed], () => {
+    clearTimeout(idleTimer);
+    idle.value = false;
+    if (!busy.value && revealed.value > 0 && revealed.value < 6) idleTimer = setTimeout(() => (idle.value = true), IDLE_MS);
+});
+
+const tapHint = computed(() => (!busy.value && !done.value && (revealed.value === 0 || idle.value) ? t(coarse ? 'cast.tapTable' : 'cast.clickTable') : undefined));
 
 async function throwOne(): Promise<void> {
     if (busy.value || throws.value.length >= 6) return;
@@ -68,6 +83,7 @@ function onKey(event: KeyboardEvent): void {
 onMounted(() => window.addEventListener('keydown', onKey));
 onBeforeUnmount(() => {
     cancelled = true;
+    clearTimeout(idleTimer);
     window.removeEventListener('keydown', onKey);
 });
 
@@ -88,7 +104,7 @@ const status = computed(() => {
         </div>
 
         <div class="cast__stage">
-            <CoinTable v-if="!flat" ref="table" @activate="activate" @unavailable="flat = true" />
+            <CoinTable v-if="!flat" ref="table" :hint="tapHint" @activate="activate" @unavailable="flat = true" />
             <div v-else class="cast__flat" aria-live="polite">
                 <template v-if="last">
                     <CoinFace v-for="(side, index) in last.coins" :key="`${revealed}-${index}`" :side="side" :size="72" />

@@ -17,11 +17,11 @@ type View = 'cast' | 'journal' | 'library' | 'about';
 const view = ref<View>('cast');
 const reading = ref(false);
 
-const tabs = computed(() => [
+/** The three working sections are the tiles; the book is a quiet link in the top row. / Три рабочих раздела это плитки; книга это тихая ссылка в верхнем ряду. */
+const tiles = computed(() => [
     { value: 'cast', label: t('nav.cast') },
     { value: 'journal', label: entries.value.length ? `${t('nav.journal')} (${entries.value.length})` : t('nav.journal') },
     { value: 'library', label: t('nav.library') },
-    { value: 'about', label: t('nav.about') },
 ]);
 
 function setView(value: string): void {
@@ -63,21 +63,26 @@ onMounted(() => {
     <div class="app">
         <h1 class="visually-hidden">{{ t('app.title') }}</h1>
 
-        <!-- The bar of the page, made like the bar of the TaoUI showcase: a glass panel, the sections as pills on the left, the language and the theme
-             on the right. Unlike the showcase it does not stick: it scrolls away with the page. -->
+        <!-- The bar of the page: a glass panel with two rows. The top one has the book on the left and the language and the theme on the right;
+             under it the three sections are tiles of equal width, easy to hit with a thumb. It does not stick: it scrolls away with the page. -->
         <header class="app__bar">
-            <nav class="app__nav" :aria-label="t('nav.label')">
-                <button v-for="item in tabs" :key="item.value" type="button" class="app__tab" :class="{ active: item.value === view }" :aria-current="item.value === view ? 'page' : undefined" @click="setView(item.value)">
+            <div class="app__top">
+                <button type="button" class="app__tab" :class="{ active: view === 'about' }" :aria-current="view === 'about' ? 'page' : undefined" @click="setView('about')">
+                    {{ t('nav.about') }}
+                </button>
+                <div class="app__tools">
+                    <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
+                        <TaoSegmentedOption value="en">EN</TaoSegmentedOption>
+                        <TaoSegmentedOption value="ru">RU</TaoSegmentedOption>
+                    </TaoSegmented>
+                    <TaoThemeToggle />
+                </div>
+            </div>
+            <nav class="app__tiles" :aria-label="t('nav.label')">
+                <button v-for="item in tiles" :key="item.value" type="button" class="app__tile" :class="{ active: item.value === view }" :aria-current="item.value === view ? 'page' : undefined" @click="setView(item.value)">
                     {{ item.label }}
                 </button>
             </nav>
-            <div class="app__tools">
-                <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
-                    <TaoSegmentedOption value="en">EN</TaoSegmentedOption>
-                    <TaoSegmentedOption value="ru">RU</TaoSegmentedOption>
-                </TaoSegmented>
-                <TaoThemeToggle />
-            </div>
         </header>
 
         <p class="app__tagline">{{ t('app.tagline') }}</p>
@@ -113,22 +118,54 @@ onMounted(() => {
     gap: var(--tao-space-5);
 }
 .app__bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 12px;
-    padding: 6px 10px;
+    display: grid;
+    gap: 8px;
+    padding: 8px 10px 10px;
     border: 1px solid var(--tao-color-border);
     border-radius: var(--tao-radius-panel);
     background: color-mix(in srgb, var(--tao-color-surface) 86%, transparent);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
-.app__nav {
+.app__top {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.app__tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+.app__tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 6px;
+    border: 1px solid var(--tao-color-border);
+    border-radius: var(--tao-radius-control);
+    background: var(--tao-color-surface);
+    color: var(--tao-color-text);
+    font: inherit;
+    font-size: clamp(13px, 3.6vw, 15px);
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+}
+.app__tile:hover {
+    background: var(--tao-color-surface-hover);
+    color: var(--tao-color-text-strong);
+}
+.app__tile.active {
+    border-color: var(--tao-color-accent);
+    background: var(--tao-color-surface-sunken);
+    color: var(--tao-color-accent);
+}
+.app__tile:focus-visible {
+    outline: 2px solid var(--tao-color-accent);
+    outline-offset: 1px;
 }
 .app__tab {
     display: inline-flex;
@@ -158,17 +195,8 @@ onMounted(() => {
     outline-offset: 1px;
 }
 @media (max-width: 520px) {
-    /* when the room is short the switches go on a row of their own, under the tabs, and stay above the text */
     .app__bar {
-        gap: 4px 8px;
-        padding: 6px 8px;
-    }
-    .app__nav {
-        gap: 2px;
-    }
-    .app__tab {
-        padding: 0 6px;
-        font-size: 12px;
+        padding: 8px;
     }
     .app__tools {
         gap: 4px;
