@@ -14,7 +14,7 @@ onMounted(async () => {
     document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
 });
 
-const RULES = ['none', 'one', 'two', 'three', 'four', 'five', 'six'] as const;
+const RULES = ['none', 'one', 'two', 'three', 'threeLater', 'four', 'five', 'six'] as const;
 </script>
 
 <template>

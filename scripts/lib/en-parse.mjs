@@ -11,6 +11,9 @@
 
 /** Typos of the transcription, exact replacements. / Опечатки переписи, точные замены. */
 export const TYPOS = [
+    ['admitting (even the goodness of women', 'admitting (even) the goodness of women'],
+    ['in his household Occasion for repentance', 'in his household. Occasion for repentance'],
+    ['undivided shows its subject proceeding very slowly', 'undivided, shows its subject proceeding very slowly'],
     ['(the manifestation) of) his virtue', '(the manifestation of) his virtue'],
     ['in accordance with this), distinguishes', 'in accordance with this, distinguishes'],
     ['in 0 accordance', 'in accordance'],
@@ -93,7 +96,8 @@ export function parseText(text) {
 
         const heading = paragraphs[0]?.match(/^([IVXLC]+)\.\s+THE\s+(.+?)\s+(?:HEXAGRAM)?$/);
         if (!heading || romanToInt(heading[1]) !== number) throw new Error(`${label}: the heading is not as expected: ${paragraphs[0]}`);
-        const translit = heading[2].replace(/\s+HEXAGRAM$/, '').split(/\s+/).map(titleCase).join(' ');
+        let translit = heading[2].replace(/\s+HEXAGRAM$/, '').split(/\s+/).map(titleCase).join(' ');
+        if (translit === 'I') translit = 'Î'; // the heading is typed without the circumflex; Legge's own text of this hexagram has it
         paragraphs = paragraphs.slice(1).filter((p) => !/^Explanation of the /.test(p));
 
         const extra = number === 1 || number === 2 ? 1 : 0; // the paragraph on the use of the number nine / six

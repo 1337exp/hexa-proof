@@ -17,7 +17,7 @@ export type Passage =
     | { kind: 'useAll'; hexagram: number };
 
 /** The name of the rule that was applied, for the explanation shown to the reader. / Имя применённого правила, для пояснения читателю. */
-export type RuleId = 'none' | 'one' | 'two' | 'three' | 'four' | 'five' | 'six' | 'sixWhole' | 'all';
+export type RuleId = 'none' | 'one' | 'two' | 'three' | 'threeLater' | 'four' | 'five' | 'six' | 'sixWhole' | 'all';
 
 export interface Reading {
     /** The primary hexagram: where we are. / Основная гексаграмма: где мы сейчас. */
@@ -66,9 +66,13 @@ export function readCast(cast: Cast, mode: ReadingMode = 'classic'): Reading {
         case 2:
             // both lines; the upper one weighs more
             return { ...base, rule: 'two', passages: changing.map((position) => line(primary, position)), main: 1 };
-        case 3:
-            // the present and where it leads; the primary verdict is the main one
-            return { ...base, rule: 'three', passages: [judgment(primary), judgment(relating!)], main: 0 };
+        case 3: {
+            // the present and where it leads. Zhu Xi (Yixue qimeng): the primary hexagram is the «chen» (the one asked), the relating one the «hui»; of the twenty
+            // ways three lines can move, the first ten (the ones that include the first line) are governed by the primary one, the other ten by the relating one
+            // Настоящее и куда оно ведёт. Чжу Си: из двадцати сочетаний трёх линий первые десять (в них есть первая линия) ведёт основная гексаграмма, остальные десять вторая
+            const first = changing.includes(1);
+            return { ...base, rule: first ? 'three' : 'threeLater', passages: [judgment(primary), judgment(relating!)], main: first ? 0 : 1 };
+        }
         case 4:
             // the two lines of the relating hexagram that did not move; the lower one weighs more
             return { ...base, rule: 'four', passages: resting(changing).map((position) => line(relating!, position)), main: 0 };

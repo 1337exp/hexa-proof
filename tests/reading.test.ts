@@ -27,10 +27,36 @@ describe('the rule of Zhu Xi (classic)', () => {
         expect(reading.passages).toEqual([line(reading.primary, 1), line(reading.primary, 3)]);
     });
 
-    it('3 moving: the verdicts of the primary and the relating hexagram, the primary weighs more', () => {
+    it('3 moving with the first line among them: the verdicts of both, the primary weighs more', () => {
         const reading = readCast([9, 9, 9, 7, 7, 7]);
         expect(reading).toMatchObject({ primary: 1, rule: 'three', main: 0 });
         expect(reading.passages).toEqual([judgment(1), judgment(reading.relating!)]);
+    });
+
+    it('3 moving without the first line: the verdicts of both, the relating one weighs more', () => {
+        const reading = readCast([7, 9, 9, 9, 7, 7]);
+        expect(reading.changing).toEqual([2, 3, 4]);
+        expect(reading).toMatchObject({ rule: 'threeLater', main: 1 });
+        expect(reading.passages).toEqual([judgment(reading.primary), judgment(reading.relating!)]);
+    });
+
+    it('all twenty ways of three lines: the ten with the first line are governed by the primary hexagram, the other ten by the relating one', () => {
+        let withFirst = 0;
+        let without = 0;
+        for (let mask = 0; mask < 64; mask++) {
+            const positions = [1, 2, 3, 4, 5, 6].filter((p) => mask & (1 << (p - 1)));
+            if (positions.length !== 3) continue;
+            const cast = [1, 2, 3, 4, 5, 6].map((p) => (positions.includes(p) ? 9 : 7)) as unknown as Parameters<typeof readCast>[0];
+            const reading = readCast(cast);
+            if (positions.includes(1)) {
+                withFirst++;
+                expect(reading).toMatchObject({ rule: 'three', main: 0 });
+            } else {
+                without++;
+                expect(reading).toMatchObject({ rule: 'threeLater', main: 1 });
+            }
+        }
+        expect([withFirst, without]).toEqual([10, 10]);
     });
 
     it('4 moving: the two quiet lines of the relating hexagram, the lower one weighs more', () => {

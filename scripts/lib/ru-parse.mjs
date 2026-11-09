@@ -73,7 +73,8 @@ export function cutLead(before) {
     const text = before.trim();
     if (!text.endsWith(':')) return { comment: text, lead: '' };
     const head = text.slice(0, -1);
-    const start = lastMatch(/[.!?»)]\s/g, head);
+    // a sentence ends with . ! ? (a closing quote or bracket may follow it); a quote alone is not an end: «…«Книга Перемен» говорит:» is one sentence
+    const start = lastMatch(/[.!?][»)"]?\s/g, head);
     const cut = start ? start.index + start[0].length : 0;
     return { comment: head.slice(0, cut).trim(), lead: head.slice(cut).trim() };
 }

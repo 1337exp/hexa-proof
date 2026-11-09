@@ -112,3 +112,48 @@ describe('the labels of the ru lines agree with the table of facts', () => {
         expect(problems).toEqual([]);
     });
 });
+
+/**
+ * Found by an outside review (Grok, 2026-11-09) and checked by hand against the source: what the packs must keep right, and what is wrong in the
+ * source itself and is kept as the author has it (not mended silently, a decision for a person).
+ * Найдено внешней проверкой и сверено по источнику вручную: что пакеты обязаны держать верно, и что неверно в самом источнике и оставлено как у автора.
+ */
+describe('what the review of the packs found', () => {
+    const ru = JSON.parse(readFileSync(new URL('../src/data/texts/ru.json', import.meta.url), 'utf8')) as TextPack;
+    const en = JSON.parse(readFileSync(new URL('../src/data/texts/en.json', import.meta.url), 'utf8')) as TextPack;
+
+    it('every Russian verdict begins at its beginning: with a capital letter, not in the middle of a sentence (9, 19, 51 had a colon inside)', () => {
+        const wrong = ru.hexagrams.filter((h) => !/^[А-ЯЁ]/.test(h.judgment?.text ?? '')).map((h) => h.number);
+        expect(wrong).toEqual([]);
+        expect(ru.hexagrams[8]!.judgment!.text).toMatch(/^Воспитание малым\. Развитие\. Плотные облака/);
+        expect(ru.hexagrams[18]!.judgment!.text).toMatch(/^Посещение\. Изначальное развитие/);
+        expect(ru.hexagrams[50]!.judgment!.text).toMatch(/^Возбуждение\. Свершение\. Молния приходит/);
+    });
+
+    it('no commentary ends on «Книга Перемен» in the middle of a sentence (the cutter took a quote for the end of a sentence)', () => {
+        const cut: string[] = [];
+        for (const h of ru.hexagrams) {
+            const check = (where: string, text?: string) => {
+                if (text && /[«"]Книга Перемен[»"]\s*$/.test(text.trim())) cut.push(`${h.number} ${where}`);
+            };
+            check('judgment', h.judgment?.comment);
+            h.lines.forEach((l, k) => check(`line ${k + 1}`, l.comment));
+        }
+        expect(cut).toEqual([]);
+    });
+
+    it('keeps the words of the author where the source itself is wrong (not mended silently)', () => {
+        // 62: «Не следует подыматься. Следует подыматься. Следует опускаться.»: a sentence too many (the Chinese: do not ascend, descend)
+        expect(ru.hexagrams[61]!.judgment!.text).toContain('Не следует подыматься. Следует подыматься. Следует опускаться.');
+        // 40.2 and 64.5: the words of the line say «sad» / «misfortune» where the line (and Legge) say good fortune
+        expect(ru.hexagrams[39]!.lines[1]!.text).toContain('Стойкость — к сожалению.');
+        expect(ru.hexagrams[63]!.lines[4]!.text).toMatch(/^Стойкость — к несчастью\./);
+    });
+
+    it('has the circumflex in the name of the 27th hexagram and the repaired places of Legge', () => {
+        expect(en.hexagrams[26]!.translit).toBe('Î');
+        expect(en.hexagrams[3]!.lines[1]!.text).toContain('(even) the goodness of women');
+        expect(en.hexagrams[36]!.lines[0]!.text).toContain('in his household. Occasion for repentance');
+        expect(en.hexagrams[46]!.lines[3]!.text).toContain('undivided, shows its subject');
+    });
+});
