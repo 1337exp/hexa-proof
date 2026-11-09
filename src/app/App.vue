@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import { confirm, TaoSegmented, TaoSegmentedOption, TaoThemeToggle } from '@1337exp/taoui';
+import { confirm, TaoButton, TaoSegmented, TaoSegmentedOption, TaoTag, TaoThemeToggle, toast } from '@1337exp/taoui';
 import { onMounted, ref } from 'vue';
 import AboutView from './components/AboutView.vue';
+import JournalView from './components/JournalView.vue';
 import CastScreen from './components/CastScreen.vue';
 import LibraryView from './components/LibraryView.vue';
 import ReadingView from './components/ReadingView.vue';
 import { i18n, locale, t } from './i18n';
+import { addEntry, entries, startJournal } from './journal';
 import { cast, question, readingMode, reset, setReadingMode } from './session';
 import { startPackLoading } from './texts';
 import { computed } from 'vue';
 
-type View = 'cast' | 'library' | 'about';
+type View = 'cast' | 'journal' | 'library' | 'about';
 
 const view = ref<View>('cast');
 const reading = ref(false);
 
 const tabs = computed(() => [
     { value: 'cast', label: t('nav.cast') },
+    { value: 'journal', label: entries.value.length ? `${t('nav.journal')} (${entries.value.length})` : t('nav.journal') },
     { value: 'library', label: t('nav.library') },
     { value: 'about', label: t('nav.about') },
 ]);
@@ -30,13 +33,30 @@ function setLanguage(value: string | number | boolean): void {
     if (i18n.isLocaleCode(code)) i18n.setLocale(code);
 }
 
+/** The id of the journal entry that holds the answer on the screen, once it is saved. / Id записи журнала с ответом на экране, когда он сохранён. */
+const savedId = ref<string | null>(null);
+
+function save(): void {
+    if (!cast.value || savedId.value) return;
+    const entry = addEntry(cast.value, question.value);
+    if (entry) {
+        savedId.value = entry.id;
+        toast().success().message(t('journal.saved'));
+    }
+}
+
 async function again(): Promise<void> {
-    if (!(await confirm().title(t('reading.againTitle')).message(t('reading.againMessage')).ok(t('reading.again')).danger())) return;
+    // a saved answer is safe in the journal: only an unsaved one is worth a question
+    if (!savedId.value && !(await confirm().title(t('reading.againTitle')).message(t('reading.againMessage')).ok(t('reading.again')).danger())) return;
+    savedId.value = null;
     reset();
     reading.value = false;
 }
 
-onMounted(startPackLoading);
+onMounted(() => {
+    startPackLoading();
+    startJournal();
+});
 </script>
 
 <template>
@@ -64,9 +84,16 @@ onMounted(startPackLoading);
 
         <main class="app__main">
             <template v-if="view === 'cast'">
-                <ReadingView v-if="reading && cast" :cast="cast" :question="question" :mode="readingMode" @update:mode="setReadingMode" @again="void again()" />
+                <ReadingView v-if="reading && cast" :cast="cast" :question="question" :mode="readingMode" @update:mode="setReadingMode">
+                    <template #actions>
+                        <TaoTag v-if="savedId" tone="success" flat>{{ t('journal.saved') }}</TaoTag>
+                        <TaoButton v-else variant="primary" @click="save()">{{ t('journal.save') }}</TaoButton>
+                        <TaoButton variant="secondary" @click="void again()">{{ t('reading.again') }}</TaoButton>
+                    </template>
+                </ReadingView>
                 <CastScreen v-else @read="reading = true" />
             </template>
+            <JournalView v-else-if="view === 'journal'" />
             <LibraryView v-else-if="view === 'library'" />
             <AboutView v-else />
         </main>

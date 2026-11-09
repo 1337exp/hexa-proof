@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TaoButton, TaoEmpty, TaoSegmented, TaoSegmentedOption } from '@1337exp/taoui';
+import { TaoEmpty, TaoSegmented, TaoSegmentedOption } from '@1337exp/taoui';
 import { computed } from 'vue';
 import { changingPositions, primaryOf, relatingOf } from '../../core/hexagram';
 import { readCast, type ReadingMode } from '../../core/reading';
@@ -10,7 +10,7 @@ import HexagramHead from './HexagramHead.vue';
 import PassageCard from './PassageCard.vue';
 
 const props = defineProps<{ cast: Cast; question: string; mode: ReadingMode }>();
-const emit = defineEmits<{ again: []; 'update:mode': [mode: ReadingMode] }>();
+const emit = defineEmits<{ 'update:mode': [mode: ReadingMode] }>();
 
 const primary = computed(() => primaryOf(props.cast));
 const relating = computed(() => relatingOf(props.cast));
@@ -55,7 +55,7 @@ function setMode(value: string | number | boolean): void {
 
         <footer class="reading__foot">
             <small v-if="pack">{{ t('texts.author', [`${pack.source.author}, ${pack.source.title}`]) }}</small>
-            <TaoButton variant="secondary" @click="emit('again')">{{ t('reading.again') }}</TaoButton>
+            <div class="reading__actions"><slot name="actions" /></div>
         </footer>
     </section>
 </template>
@@ -110,6 +110,11 @@ function setMode(value: string | number | boolean): void {
 .reading__passages {
     display: grid;
     gap: var(--tao-space-4);
+}
+.reading__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tao-space-2);
 }
 .reading__foot {
     display: flex;
