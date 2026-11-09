@@ -142,7 +142,7 @@ describe('what the review of the packs found', () => {
         expect(cut).toEqual([]);
     });
 
-    it('mends the three places that are wrong in the source against the Chinese original, and tells the reader so', () => {
+    it('mends the four places that are wrong in the source against the Chinese original, and tells the reader so', () => {
         // 62 不宜上宜下: do not ascend, descend (the source had a sentence too many)
         const j62 = ru.hexagrams[61]!.judgment!;
         expect(j62.text).toContain('Не следует подыматься. Следует опускаться.');
@@ -157,9 +157,13 @@ describe('what the review of the packs found', () => {
         expect(l645.note).toMatch(/китайскому тексту/);
         // 40.3 貞吝 stays «к сожалению»: it is right there
         expect(ru.hexagrams[39]!.lines[2]!.text).toMatch(/Стойкость — к сожалению\.$/);
+        // 54.1 征吉: going forward brings good fortune (the source had the «misfortune» of the verdict of the whole hexagram, 征凶)
+        const l541 = ru.hexagrams[53]!.lines[0]!;
+        expect(l541.text).toMatch(/Поход — к счастью\.$/);
+        expect(l541.note).toMatch(/китайскому тексту/);
         // and nothing else carries a note
         const noted = ru.hexagrams.flatMap((h) => [h.judgment?.note, ...h.lines.map((l) => l.note)]).filter(Boolean);
-        expect(noted).toHaveLength(3);
+        expect(noted).toHaveLength(4);
     });
 
     it('has the circumflex in the name of the 27th hexagram and the repaired places of Legge', () => {
