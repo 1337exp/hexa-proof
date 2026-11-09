@@ -87,6 +87,7 @@ onMounted(() => {
                 <button type="button" class="app__tab" :class="{ active: view === 'about' }" :aria-current="view === 'about' ? 'page' : undefined" @click="setView('about')">
                     {{ t('nav.about') }}
                 </button>
+                <a class="app__home" href="https://666.io" target="_blank" rel="noopener">666.io</a>
                 <div class="app__tools">
                     <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
                         <TaoSegmentedOption value="en">EN</TaoSegmentedOption>
@@ -122,9 +123,6 @@ onMounted(() => {
             <AboutView v-else />
         </main>
 
-        <footer class="app__footer">
-            <a href="https://666.io" target="_blank" rel="noopener">666.io</a>
-        </footer>
     </div>
 </template>
 
@@ -154,6 +152,22 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+}
+.app__home {
+    margin-inline-end: auto; /* the book and the address stay on the left, the switches on the right */
+    padding: 0 6px;
+    color: var(--tao-color-text-muted);
+    font-size: 13px;
+    text-decoration: none;
+    opacity: 0.8;
+}
+.app__home:hover {
+    color: var(--tao-color-text-strong);
+    opacity: 1;
+}
+.app__home:focus-visible {
+    outline: 2px solid var(--tao-color-accent);
+    outline-offset: 2px;
 }
 .app__tile {
     display: flex;
@@ -233,20 +247,6 @@ onMounted(() => {
     clip: rect(0 0 0 0);
     white-space: nowrap;
 }
-.app__footer {
-    margin-top: var(--tao-space-10);
-    padding-top: var(--tao-space-6);
-    border-top: 1px solid var(--tao-color-border);
-    text-align: center;
-    font-size: 14px;
-    color: var(--tao-color-text-muted);
-}
-.app__footer a {
-    color: var(--tao-color-text);
-}
-.app__footer a:hover {
-    color: var(--tao-color-text-strong);
-}
 /* the name of the language switch is for screen readers only: the two letters speak for themselves */
 .app__tools :deep(.tao-segmented__legend) {
     position: absolute;
@@ -260,6 +260,5 @@ onMounted(() => {
     display: flex;
     gap: var(--tao-space-3);
     align-items: center;
-    margin-inline-start: auto;
 }
 </style>
