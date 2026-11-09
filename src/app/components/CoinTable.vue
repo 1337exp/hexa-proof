@@ -76,10 +76,11 @@ defineExpose({
                 <path v-else d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
             </svg>
         </button>
-        <!-- When the cast is done the main action stands in the middle of the table, on a pane of glass; the container lets presses through, the button takes its own. -->
+        <!-- When the cast is done the main action stands in the middle of the table, golden; the container lets presses through, the button takes its own.
+             It is not glass: a blur behind an element whose opacity changes does not hold until the fade is over, and the button would show it. -->
         <Transition name="action">
             <div v-if="action" class="coin-table__action">
-                <TaoButton class="tao-surface-glass coin-table__read" variant="secondary" size="large" @click="emit('action')">{{ action }}</TaoButton>
+                <TaoButton class="coin-table__read" variant="primary" size="large" @click="emit('action')">{{ action }}</TaoButton>
             </div>
         </Transition>
         <!-- The hint lets every press through (pointer-events: none): the press lands on the table itself and throws the coins. -->
@@ -149,7 +150,10 @@ defineExpose({
 }
 .coin-table__read {
     pointer-events: auto;
-    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.55);
+    border: 0;
+    box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.5),
+        0 0 26px rgba(255, 183, 70, 0.28); /* a faint golden glow, like the coins */
 }
 .action-enter-active {
     transition:
