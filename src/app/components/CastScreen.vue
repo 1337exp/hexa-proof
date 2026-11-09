@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { LineValue } from '../../core/types';
 import { t } from '../i18n';
 import { cast, question, reset as resetThrows, throwNext, throws } from '../session';
-import { thud, unlockSound } from '../sound';
+import { unlockSound } from '../sound';
 import CoinFace from './CoinFace.vue';
 import CoinTable from './CoinTable.vue';
 import HexagramFigure from './HexagramFigure.vue';
@@ -100,7 +100,7 @@ const status = computed(() => {
         <h2 id="cast-title" class="visually-hidden">{{ t('nav.cast') }}</h2>
 
         <div class="cast__stage">
-            <CoinTable v-if="!flat" ref="table" :hint="tapHint" @activate="activate" @impact="thud" @unavailable="flat = true" />
+            <CoinTable v-if="!flat" ref="table" :hint="tapHint" @activate="activate" @unavailable="flat = true" />
             <div v-else class="cast__flat" aria-live="polite">
                 <template v-if="last">
                     <CoinFace v-for="(side, index) in last.coins" :key="`${revealed}-${index}`" :side="side" :size="72" />

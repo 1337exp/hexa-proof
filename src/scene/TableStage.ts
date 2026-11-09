@@ -136,8 +136,8 @@ export const DEFAULT_TUNING: Readonly<StageTuning> = {
 export interface TableStageOptions {
     /** Called when the person presses on the table. / Зовётся, когда человек нажимает на стол. */
     onActivate?: () => void;
-    /** Called once per throw, when the second of the three coins touches the felt, `strength` 0…1: for the sound. / Зовётся раз за бросок, когда вторая из трёх монет касается сукна: для звука. */
-    onImpact?: (strength: number) => void;
+    /** Called when the golden glow starts to run over the coins: for the sound. / Зовётся, когда золотое свечение побежало по монетам: для звука. */
+    onGlow?: () => void;
 }
 
 export class TableStage {
@@ -178,15 +178,13 @@ export class TableStage {
     /** The wave of glow that runs over the coins when the sixth line is down: seconds since it began, or −1. / Волна свечения: секунды от начала или −1. */
     private glowTime = -1;
     private skipGlow = false;
-    /** How many coins of this toss have hit the felt so far. / Сколько монет этого броска уже ударило о сукно. */
-    private landed = 0;
     private aspect = 1.8;
     private readonly waves: { mesh: Mesh<PlaneGeometry, MeshBasicMaterial>; age: number; strength: number }[] = [];
 
-    private readonly onImpact?: (strength: number) => void;
+    private readonly onGlow?: () => void;
 
     constructor(container: HTMLElement, options: TableStageOptions = {}) {
-        this.onImpact = options.onImpact;
+        this.onGlow = options.onGlow;
         this.renderer = createRenderer(container, { antialias: true });
         // The tone mapping is applied to the whole frame, the picture of the table too: it makes the table dark and deep, and that is the look we want.
         // Тонмаппинг ложится на весь кадр, на картинку стола тоже: стол выходит тёмным и глубоким, это нужный нам вид.
@@ -318,8 +316,6 @@ export class TableStage {
         mesh.position.set(at.x, 0.012, at.z);
         this.scene.add(mesh);
         this.waves.push({ mesh, age: 0, strength });
-        // one drum beat per throw, at the middle of the three hits: the moment the second coin touches the table
-        if (++this.landed === 2) this.onImpact?.(strength);
         this.shake = Math.max(this.shake, strength * this.tuning.shake);
         this.flash.position.set(at.x, 1.1, at.z);
         this.flashLevel = Math.max(this.flashLevel, strength * this.tuning.flash);
@@ -335,6 +331,7 @@ export class TableStage {
         const span = Math.max(...xs) - left || 1;
         for (const state of this.coins) state.glowDelay = ((state.mesh.position.x - left) / span) * this.tuning.glowWave;
         this.glowTime = 0;
+        this.onGlow?.();
     }
 
     /** Plays the wave of glow over the coins that lie on the table now (for the laboratory). / Пускает волну по монетам, что лежат на столе. */
@@ -441,7 +438,6 @@ export class TableStage {
         const group = this.coins.slice(index * 3, index * 3 + 3);
         this.latest = group;
         this.skipGlow = Boolean(options.instant);
-        this.landed = 0;
         return new Promise((resolve) => {
             this.pending = { resolve };
             group.forEach((state, k) => {

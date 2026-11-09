@@ -23,6 +23,13 @@ The code of this project is MIT (see `LICENSE`). The books below are not part of
 - Licence: SIL Open Font License 1.1, the text is in `src/assets/font/LICENSE.txt`. The files are unchanged.
 - Шрифт Roboto (переменный, латиница и кириллица), лицензия SIL OFL 1.1, файлы без изменений; взяты из проекта next-up.
 
+## Sounds / Звуки
+
+- `src/assets/sound/taiko.mp3`: a stroke of a taiko drum (the file was named `_Taiko_Drum_Sticks-2.mp3`); played when the golden glow starts.
+- `src/assets/sound/coin-flip.mp3`: a coin flip (the file was named `_Coin_flip.mp3`); played when the coins are thrown.
+- Both were found by the author of the project as royalty-free sounds and are used unchanged. **The source and the licence terms are still to be written here before the public release.**
+- Оба звука нашёл автор проекта как бесплатные для использования; файлы не менялись. **Источник и условия лицензии нужно вписать сюда до публикации.**
+
 ## Not used / Не используем
 
 `iching_wilhelm_translation.csv` (the English text of Cary F. Baynes after Richard Wilhelm, 1950, still under copyright, whatever the licence note on the CSV says) is kept only on our machines for a check of the table of facts and does not enter the product.

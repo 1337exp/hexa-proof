@@ -89,6 +89,7 @@ function setMode(value: string | number | boolean): void {
 .reading__titlebar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--tao-space-2);
 }
 .reading__title {

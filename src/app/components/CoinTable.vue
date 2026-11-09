@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { t } from '../i18n';
-import { setSound, soundOn } from '../sound';
+import { playFlip, playTaiko, prefetchSound, setSound, soundOn } from '../sound';
 import type { Coins } from '../../core/cast';
 import type { TableStage } from '../../scene/TableStage';
 
@@ -10,7 +10,7 @@ import type { TableStage } from '../../scene/TableStage';
  * so the pages that do not need it (the library, the book) do not carry it.
  * Стол с тремя монетами. Сцена three.js грузится, когда компонент появляется, отдельным куском: страницы, которым она не нужна, её не несут.
  */
-const emit = defineEmits<{ activate: []; impact: [strength: number]; unavailable: [] }>();
+const emit = defineEmits<{ activate: []; unavailable: [] }>();
 /** The words under the finger; with none, the hint is not shown. / Слова под пальцем; без них подсказки нет. */
 defineProps<{ hint?: string }>();
 
@@ -18,10 +18,11 @@ const host = ref<HTMLElement | null>(null);
 let stage: TableStage | null = null;
 
 onMounted(async () => {
+    prefetchSound(); // the sounds come while the table loads
     try {
         const { TableStage: Stage } = await import('../../scene/TableStage');
         if (!host.value) return;
-        stage = new Stage(host.value, { onActivate: () => emit('activate'), onImpact: (strength) => emit('impact', strength) });
+        stage = new Stage(host.value, { onActivate: () => emit('activate'), onGlow: playTaiko });
     } catch {
         // no WebGL (or no 2D canvas): the screen falls back to the flat coins
         emit('unavailable');
@@ -35,7 +36,11 @@ onBeforeUnmount(() => {
 
 defineExpose({
     /** Plays the toss; resolves when the coins lie still. Without a stage it resolves at once. / Разыгрывает бросок; без сцены завершается сразу. */
-    toss: (sides: Coins, instant = false): Promise<void> => stage?.toss(sides, { instant }) ?? Promise.resolve(),
+    toss: (sides: Coins, instant = false): Promise<void> => {
+        if (!stage) return Promise.resolve();
+        if (!instant) playFlip(stage.speed); // the clink of the landing falls on the landing at the speed of the table
+        return stage.toss(sides, { instant });
+    },
     reset: (): void => stage?.reset(),
 });
 </script>

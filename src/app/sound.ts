@@ -2,10 +2,10 @@ import { createSavedStorage } from '@1337exp/taoux/storage';
 import { ref } from 'vue';
 
 /**
- * The sound of the table: a dull, deep drum struck with a stick, one beat for every coin that lands. It is made by WebAudio on the spot,
- * so there are no sound files. It is for the table only and never touches the numbers of the cast.
- * Звук стола: глухой низкий барабан, по которому бьют палкой, один удар на каждую упавшую монету. Его делает WebAudio на месте, файлов нет.
- * К числам броска он отношения не имеет.
+ * The sound of the table: the flip of the coins when they are thrown, and a taiko drum when the golden glow runs over them.
+ * Both are short recorded sounds (see THIRD-PARTY-NOTICES.md). The sound is for the table only and never touches the numbers of the cast.
+ * Звук стола: щелчок монет, когда их бросают, и барабан тайко, когда по ним бежит золотое свечение. Оба звука короткие записи
+ * (см. THIRD-PARTY-NOTICES.md). Звук нужен только столу и к числам броска отношения не имеет.
  */
 
 const storage = createSavedStorage('hexa-proof.sound');
@@ -18,28 +18,53 @@ export function setSound(on: boolean): void {
     storage.write(on ? 'on' : 'off');
 }
 
+type Name = 'flip' | 'taiko';
+
+const URLS: Record<Name, string> = {
+    flip: new URL('../assets/sound/coin-flip.mp3', import.meta.url).href,
+    taiko: new URL('../assets/sound/taiko.mp3', import.meta.url).href,
+};
+/** How loud each one is, 0…1. / Громкость каждого, от 0 до 1. */
+const VOLUME: Record<Name, number> = { flip: 0.8, taiko: 1 };
+
 let context: AudioContext | null = null;
-let output: AudioNode | null = null;
-let noise: AudioBuffer | null = null;
+const fetched = new Map<Name, Promise<ArrayBuffer | null>>();
+const decoded = new Map<Name, Promise<AudioBuffer | null>>();
 
 /**
- * Wakes the audio. A browser keeps the sound shut until the person has pressed something, so it is called from the press that throws.
- * Будит звук. Браузер держит его выключенным, пока человек ничего не нажал, поэтому зовётся из нажатия, которое бросает.
+ * Starts loading the files, so they are there by the first throw. It needs no press: no audio is created yet.
+ * Начинает грузить файлы, чтобы они были к первому броску. Нажатие не нужно: звук ещё не создан.
+ */
+export function prefetchSound(): void {
+    for (const name of Object.keys(URLS) as Name[]) {
+        if (fetched.has(name)) continue;
+        fetched.set(
+            name,
+            fetch(URLS[name])
+                .then((response) => response.arrayBuffer())
+                .catch(() => null), // the file did not come: that sound is silent, the rest works
+        );
+    }
+}
+
+/**
+ * Wakes the audio and decodes the sounds. A browser keeps the sound shut until the person has pressed something, so it is called from the
+ * press that throws.
+ * Будит звук и разбирает записи. Браузер держит звук выключенным, пока человек ничего не нажал, поэтому зовётся из нажатия, которое бросает.
  */
 export function unlockSound(): void {
     if (!soundOn.value) return;
     try {
         if (!context) {
-            context = new AudioContext();
-            // three coins land together: a gentle compressor keeps the sum from clipping
-            const compressor = context.createDynamicsCompressor();
-            compressor.threshold.value = -14;
-            compressor.ratio.value = 6;
-            compressor.connect(context.destination);
-            output = compressor;
-            noise = context.createBuffer(1, Math.floor(context.sampleRate * 0.12), context.sampleRate);
-            const data = noise.getChannelData(0);
-            for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+            const ctx = new AudioContext();
+            context = ctx;
+            prefetchSound();
+            for (const name of Object.keys(URLS) as Name[]) {
+                decoded.set(
+                    name,
+                    (fetched.get(name) ?? Promise.resolve(null)).then((data) => (data ? ctx.decodeAudioData(data) : null)).catch(() => null),
+                );
+            }
         }
         if (context.state === 'suspended') void context.resume();
     } catch {
@@ -47,56 +72,33 @@ export function unlockSound(): void {
     }
 }
 
-/** One beat of the drum; `strength` is 0…1. / Один удар барабана; `strength` от 0 до 1. */
-export function thud(strength = 1): void {
-    if (!soundOn.value || !context || !output || !noise || context.state !== 'running') return;
+function play(name: Name, rate = 1): void {
     const ctx = context;
-    const t0 = ctx.currentTime;
-    const k = Math.min(1, Math.max(0.2, strength));
-    const pitch = 0.92 + Math.random() * 0.16; // no two beats are the same
+    const ready = decoded.get(name);
+    if (!soundOn.value || !ctx || !ready) return;
+    void ready.then((buffer) => {
+        if (!buffer || !soundOn.value || ctx.state !== 'running') return;
+        const source = ctx.createBufferSource();
+        const gain = ctx.createGain();
+        source.buffer = buffer;
+        source.playbackRate.value = rate;
+        gain.gain.value = VOLUME[name];
+        source.connect(gain).connect(ctx.destination);
+        source.start();
+    });
+}
 
-    const muffle = ctx.createBiquadFilter(); // the skin is wrapped: the high part is taken away
-    muffle.type = 'lowpass';
-    muffle.frequency.value = 900;
-    muffle.connect(output);
+/**
+ * The coins are thrown. The recording is about a second long and ends with the clink of the landing, so it is played as fast as the table
+ * runs (`rate`, the speed of the stage): then the clink falls on the landing.
+ * Монеты брошены. Запись длится около секунды и кончается звоном падения, поэтому она идёт так же быстро, как стол (`rate`, скорость сцены):
+ * тогда звон попадает в падение.
+ */
+export function playFlip(rate = 1): void {
+    play('flip', rate);
+}
 
-    // the body of the drum: a note that falls fast and fades
-    const body = ctx.createOscillator();
-    const bodyGain = ctx.createGain();
-    body.type = 'sine';
-    body.frequency.setValueAtTime(150 * pitch, t0);
-    body.frequency.exponentialRampToValueAtTime(58 * pitch, t0 + 0.11);
-    bodyGain.gain.setValueAtTime(0.0001, t0);
-    bodyGain.gain.exponentialRampToValueAtTime(0.9 * k, t0 + 0.004);
-    bodyGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.5);
-    body.connect(bodyGain).connect(muffle);
-    body.start(t0);
-    body.stop(t0 + 0.55);
-
-    // the boom under it: lower and a little longer
-    const boom = ctx.createOscillator();
-    const boomGain = ctx.createGain();
-    boom.type = 'triangle';
-    boom.frequency.setValueAtTime(88 * pitch, t0);
-    boom.frequency.exponentialRampToValueAtTime(44 * pitch, t0 + 0.2);
-    boomGain.gain.setValueAtTime(0.0001, t0);
-    boomGain.gain.exponentialRampToValueAtTime(0.55 * k, t0 + 0.006);
-    boomGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.7);
-    boom.connect(boomGain).connect(muffle);
-    boom.start(t0);
-    boom.stop(t0 + 0.75);
-
-    // the stick: a short soft knock, only a little of it
-    const knock = ctx.createBufferSource();
-    const knockFilter = ctx.createBiquadFilter();
-    const knockGain = ctx.createGain();
-    knock.buffer = noise;
-    knockFilter.type = 'bandpass';
-    knockFilter.frequency.value = 1400 * pitch;
-    knockFilter.Q.value = 0.7;
-    knockGain.gain.setValueAtTime(0.28 * k, t0);
-    knockGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.045);
-    knock.connect(knockFilter).connect(knockGain).connect(output);
-    knock.start(t0);
-    knock.stop(t0 + 0.06);
+/** The golden glow starts: a stroke of the taiko. / Золотое свечение началось: удар тайко. */
+export function playTaiko(): void {
+    play('taiko');
 }
