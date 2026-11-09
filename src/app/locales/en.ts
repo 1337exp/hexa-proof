@@ -98,9 +98,6 @@ export const en = {
         introTitle: 'From the introduction of the book',
         notice: 'This is a reading aid, not advice. Decisions about health, money and law are for you and the right professionals.',
     },
-    footer: {
-        homepage: 'Homepage',
-    },
     texts: {
         author: 'Text: {0}',
     },

@@ -41,11 +41,13 @@ onMounted(startPackLoading);
 
 <template>
     <div class="app">
-        <header class="app__header">
-            <div class="app__brand">
-                <h1 class="visually-hidden">{{ t('app.title') }}</h1>
-                <p class="app__tagline">{{ t('app.tagline') }}</p>
-            </div>
+        <h1 class="visually-hidden">{{ t('app.title') }}</h1>
+
+        <!-- The bar of the page: the sections on the left, the language and the theme on the right. It scrolls away with the page. -->
+        <header class="app__bar">
+            <nav class="app__nav" :aria-label="t('nav.label')">
+                <TaoTabs :model-value="view" :items="tabs" @update:model-value="setView" />
+            </nav>
             <div class="app__tools">
                 <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
                     <TaoSegmentedOption value="en">EN</TaoSegmentedOption>
@@ -55,9 +57,7 @@ onMounted(startPackLoading);
             </div>
         </header>
 
-        <nav class="app__nav" :aria-label="t('nav.label')">
-            <TaoTabs :model-value="view" :items="tabs" @update:model-value="setView" />
-        </nav>
+        <p class="app__tagline">{{ t('app.tagline') }}</p>
 
         <main class="app__main">
             <template v-if="view === 'cast'">
@@ -69,7 +69,7 @@ onMounted(startPackLoading);
         </main>
 
         <footer class="app__footer">
-            {{ t('footer.homepage') }}: <a href="https://666.io" target="_blank" rel="noopener">666.io</a>
+            <a href="https://666.io" target="_blank" rel="noopener">666.io</a>
         </footer>
     </div>
 </template>
@@ -82,12 +82,22 @@ onMounted(startPackLoading);
     display: grid;
     gap: var(--tao-space-5);
 }
-.app__header {
+.app__bar {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--tao-space-4);
-    align-items: flex-start;
+    gap: var(--tao-space-2) var(--tao-space-4);
+    align-items: center;
     justify-content: space-between;
+}
+.app__nav {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.app__tagline {
+    margin: 0;
+    max-width: 56ch;
+    font-size: 14px;
+    color: var(--tao-color-text-muted);
 }
 .visually-hidden {
     position: absolute;
@@ -98,10 +108,11 @@ onMounted(startPackLoading);
     white-space: nowrap;
 }
 .app__footer {
-    margin-top: var(--tao-space-6);
-    padding-top: var(--tao-space-4);
+    margin-top: var(--tao-space-10);
+    padding-top: var(--tao-space-6);
     border-top: 1px solid var(--tao-color-border);
     text-align: center;
+    font-size: 14px;
     color: var(--tao-color-text-muted);
 }
 .app__footer a {
@@ -109,18 +120,6 @@ onMounted(startPackLoading);
 }
 .app__footer a:hover {
     color: var(--tao-color-text-strong);
-}
-.app__title {
-    margin: 0;
-    font-family: var(--hx-serif);
-    font-size: 28px;
-    letter-spacing: 0.02em;
-    color: var(--tao-color-text-strong);
-}
-.app__tagline {
-    margin: 4px 0 0;
-    max-width: 52ch;
-    color: var(--tao-color-text-muted);
 }
 /* the name of the language switch is for screen readers only: the two letters speak for themselves */
 .app__tools :deep(.tao-segmented__legend) {
