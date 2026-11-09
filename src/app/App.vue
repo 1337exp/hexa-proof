@@ -63,10 +63,13 @@ onMounted(() => {
     <div class="app">
         <h1 class="visually-hidden">{{ t('app.title') }}</h1>
 
-        <!-- The bar of the page: a glass panel with two rows. The top one has the book on the left and the language and the theme on the right;
-             under it the three sections are tiles of equal width, easy to hit with a thumb. It does not stick: it scrolls away with the page. -->
+        <!-- The bar of the page: a glass panel with the book on the left and the language and the theme on the right. Under it, outside the panel,
+             the three sections are tiles of equal width, easy to hit with a thumb. Nothing sticks: it all scrolls away with the page. -->
         <header class="app__bar">
             <div class="app__top">
+                <button type="button" class="app__tab" :class="{ active: view === 'about' }" :aria-current="view === 'about' ? 'page' : undefined" @click="setView('about')">
+                    {{ t('nav.about') }}
+                </button>
                 <div class="app__tools">
                     <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
                         <TaoSegmentedOption value="en">EN</TaoSegmentedOption>
@@ -75,12 +78,13 @@ onMounted(() => {
                     <TaoThemeToggle />
                 </div>
             </div>
-            <nav class="app__tiles" :aria-label="t('nav.label')">
-                <button v-for="item in tiles" :key="item.value" type="button" class="app__tile" :class="{ active: item.value === view }" :aria-current="item.value === view ? 'page' : undefined" @click="setView(item.value)">
-                    {{ item.label }}
-                </button>
-            </nav>
         </header>
+
+        <nav class="app__tiles" :aria-label="t('nav.label')">
+            <button v-for="item in tiles" :key="item.value" type="button" class="app__tile" :class="{ active: item.value === view }" :aria-current="item.value === view ? 'page' : undefined" @click="setView(item.value)">
+                {{ item.label }}
+            </button>
+        </nav>
 
         <p class="app__tagline">{{ t('app.tagline') }}</p>
 
@@ -101,7 +105,6 @@ onMounted(() => {
         </main>
 
         <footer class="app__footer">
-            <button type="button" class="app__about" :aria-current="view === 'about' ? 'page' : undefined" @click="setView('about')">{{ t('nav.about') }}</button>
             <a href="https://666.io" target="_blank" rel="noopener">666.io</a>
         </footer>
     </div>
@@ -116,9 +119,7 @@ onMounted(() => {
     gap: var(--tao-space-5);
 }
 .app__bar {
-    display: grid;
-    gap: 8px;
-    padding: 8px 10px 10px;
+    padding: 6px 10px;
     border: 1px solid var(--tao-color-border);
     border-radius: var(--tao-radius-panel);
     background: color-mix(in srgb, var(--tao-color-surface) 86%, transparent);
@@ -161,13 +162,40 @@ onMounted(() => {
     background: var(--tao-color-surface-sunken);
     color: var(--tao-color-accent);
 }
+.app__tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tao-control-height);
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--tao-radius-control);
+    background: transparent;
+    color: var(--tao-color-text-muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.app__tab:hover {
+    background: var(--tao-color-surface-hover);
+    color: var(--tao-color-text);
+}
+.app__tab.active {
+    background: var(--tao-color-surface-sunken);
+    color: var(--tao-color-accent);
+}
+.app__tab:focus-visible {
+    outline: 2px solid var(--tao-color-accent);
+    outline-offset: 1px;
+}
 .app__tile:focus-visible {
     outline: 2px solid var(--tao-color-accent);
     outline-offset: 1px;
 }
 @media (max-width: 520px) {
     .app__bar {
-        padding: 8px;
+        padding: 6px 8px;
     }
     .app__tools {
         gap: 4px;
@@ -191,29 +219,9 @@ onMounted(() => {
     margin-top: var(--tao-space-10);
     padding-top: var(--tao-space-6);
     border-top: 1px solid var(--tao-color-border);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--tao-space-2) var(--tao-space-6);
+    text-align: center;
     font-size: 14px;
     color: var(--tao-color-text-muted);
-}
-.app__about {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--tao-color-text);
-    font: inherit;
-    text-decoration: underline;
-    cursor: pointer;
-}
-.app__about:hover,
-.app__about[aria-current='page'] {
-    color: var(--tao-color-accent);
-}
-.app__about:focus-visible {
-    outline: 2px solid var(--tao-color-accent);
-    outline-offset: 2px;
 }
 .app__footer a {
     color: var(--tao-color-text);
