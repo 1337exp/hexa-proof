@@ -34,6 +34,16 @@ const URLS: Record<Name, string> = {
 /** How loud each one is, 0…1: from the lowest to the highest, a random one in between at every play, so the flips do not tire. / Громкость каждого, от 0 до 1: на каждый раз случайная между меньшей и большей, чтобы щелчки не надоедали. */
 const VOLUME: Record<Name, readonly [number, number]> = { flip: [0.03, 0.05], taiko: [0.25, 0.25] };
 const SAMPLE_RATE = 44100;
+/**
+ * How a sound is softened. The flip begins with a ringing knock (the first 0.15 s of the recording) and ends with the clink of the landing: only
+ * the beginning is turned down (`start`: its level, held for `hold` s of the recording, then brought back to full by `back`), and the high part is
+ * cut (`lowpass`, Hz).
+ * Как звук смягчён. Щелчок начинается звонким стуком (первые 0,15 с записи), а кончается звоном падения: приглушено только начало (`start` — его
+ * уровень, держится `hold` с записи, к `back` возвращается к полному), и срезана верхушка (`lowpass`, Гц).
+ */
+const SOFTEN: Partial<Record<Name, { start: number; hold: number; back: number; lowpass: number }>> = {
+    flip: { start: 0.25, hold: 0.3, back: 0.6, lowpass: 4500 },
+};
 
 let context: AudioContext | null = null;
 const buffers = new Map<Name, AudioBuffer>();
@@ -111,7 +121,21 @@ function play(name: Name, rate = 1): void {
     source.playbackRate.value = rate;
     const [low, high] = VOLUME[name];
     gain.gain.value = low + Math.random() * (high - low);
-    source.connect(gain).connect(ctx.destination);
+    const soft = SOFTEN[name];
+    if (soft) {
+        // the times are of the recording; it plays `rate` times as fast
+        const now = ctx.currentTime;
+        const level = gain.gain.value;
+        gain.gain.setValueAtTime(level * soft.start, now);
+        gain.gain.setValueAtTime(level * soft.start, now + soft.hold / rate);
+        gain.gain.linearRampToValueAtTime(level, now + soft.back / rate);
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = soft.lowpass;
+        source.connect(filter).connect(gain).connect(ctx.destination);
+    } else {
+        source.connect(gain).connect(ctx.destination);
+    }
     source.start();
 }
 
