@@ -222,7 +222,7 @@ onMounted(() => {
 .app__row {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: stretch; /* the tag takes the height of the button beside it */
     gap: var(--tao-space-2);
 }
 .visually-hidden {
