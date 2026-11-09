@@ -152,26 +152,32 @@ defineExpose({
     pointer-events: none;
 }
 .coin-table .coin-table__read {
+    /* the same look as the words «Нажмите на стол» before the cast: the bronze-gold colour, the weight and the spacing of the letters, the dark pane;
+       the size of the button is its own, and the final word is underlined, because it is to be pressed */
     pointer-events: auto;
     border: 0;
-    background: rgba(255, 190, 80, 0.62);
-    color: #fff4de;
+    background: rgba(14, 9, 7, 0.62);
+    color: var(--hx-bronze-light);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
     -webkit-backdrop-filter: blur(0);
     backdrop-filter: blur(0);
     transition:
         backdrop-filter 0.7s ease,
         -webkit-backdrop-filter 0.7s ease,
         background-color 0.2s ease;
-    box-shadow:
-        0 6px 24px rgba(0, 0, 0, 0.5),
-        0 0 26px rgba(255, 183, 70, 0.25); /* a faint golden glow, like the coins */
 }
 .coin-table .coin-table__read--glass {
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
 }
 .coin-table .coin-table__read:hover {
-    background: rgba(255, 196, 96, 0.76);
+    background: rgba(14, 9, 7, 0.8);
+    color: #ffd9a0;
 }
 .action-enter-active {
     transition:
