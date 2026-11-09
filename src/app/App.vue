@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { confirm, TaoSegmented, TaoSegmentedOption, TaoTabs, TaoThemeToggle } from '@1337exp/taoui';
+import { confirm, TaoSegmented, TaoSegmentedOption, TaoThemeToggle } from '@1337exp/taoui';
 import { onMounted, ref } from 'vue';
 import AboutView from './components/AboutView.vue';
 import CastScreen from './components/CastScreen.vue';
@@ -43,10 +43,13 @@ onMounted(startPackLoading);
     <div class="app">
         <h1 class="visually-hidden">{{ t('app.title') }}</h1>
 
-        <!-- The bar of the page: the sections on the left, the language and the theme on the right. It scrolls away with the page. -->
+        <!-- The bar of the page, made like the bar of the TaoUI showcase: a glass panel, the sections as pills on the left, the language and the theme
+             on the right. Unlike the showcase it does not stick: it scrolls away with the page. -->
         <header class="app__bar">
             <nav class="app__nav" :aria-label="t('nav.label')">
-                <TaoTabs :model-value="view" :items="tabs" @update:model-value="setView" />
+                <button v-for="item in tabs" :key="item.value" type="button" class="app__tab" :class="{ active: item.value === view }" :aria-current="item.value === view ? 'page' : undefined" @click="setView(item.value)">
+                    {{ item.label }}
+                </button>
             </nav>
             <div class="app__tools">
                 <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
@@ -85,13 +88,64 @@ onMounted(startPackLoading);
 .app__bar {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--tao-space-2) var(--tao-space-4);
     align-items: center;
-    justify-content: space-between;
+    gap: 6px 12px;
+    padding: 6px 10px;
+    border: 1px solid var(--tao-color-border);
+    border-radius: var(--tao-radius-panel);
+    background: color-mix(in srgb, var(--tao-color-surface) 86%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
 }
 .app__nav {
-    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
     min-width: 0;
+}
+.app__tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tao-control-height);
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--tao-radius-control);
+    background: transparent;
+    color: var(--tao-color-text-muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.app__tab:hover {
+    background: var(--tao-color-surface-hover);
+    color: var(--tao-color-text);
+}
+.app__tab.active {
+    background: var(--tao-color-surface-sunken);
+    color: var(--tao-color-accent);
+}
+.app__tab:focus-visible {
+    outline: 2px solid var(--tao-color-accent);
+    outline-offset: 1px;
+}
+@media (max-width: 520px) {
+    /* when the room is short the switches go on a row of their own, under the tabs, and stay above the text */
+    .app__bar {
+        gap: 4px 8px;
+        padding: 6px 8px;
+    }
+    .app__nav {
+        gap: 2px;
+    }
+    .app__tab {
+        padding: 0 6px;
+        font-size: 12px;
+    }
+    .app__tools {
+        gap: 4px;
+    }
 }
 .app__tagline {
     margin: 0;
@@ -134,5 +188,6 @@ onMounted(startPackLoading);
     display: flex;
     gap: var(--tao-space-3);
     align-items: center;
+    margin-inline-start: auto;
 }
 </style>
