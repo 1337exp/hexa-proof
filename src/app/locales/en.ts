@@ -1,7 +1,7 @@
 export const en = {
     app: {
         title: 'Hexa Proof',
-        tagline: 'An oracle of the Book of Changes: throw the coins, read the classic text. Nothing leaves your device.',
+        tagline: 'An oracle of the Book of Changes: throw the coins, read the classic text.',
         language: 'Language',
     },
     nav: {
@@ -13,9 +13,7 @@ export const en = {
     },
     cast: {
         questionLabel: 'Your question',
-        questionPlaceholder: 'Hold a question in mind, and write it here if you wish',
-        questionHint: 'It stays on this device. The oracle does not need it: it only helps you read the answer later.',
-        throw: 'Throw the coins',
+        questionPlaceholder: 'Write your question down for yourself: it is easier to hold it in mind',
         throwAll: 'All six at once',
         reset: 'Start over',
         resetTitle: 'Start over?',

@@ -67,9 +67,6 @@ onMounted(() => {
              under it the three sections are tiles of equal width, easy to hit with a thumb. It does not stick: it scrolls away with the page. -->
         <header class="app__bar">
             <div class="app__top">
-                <button type="button" class="app__tab" :class="{ active: view === 'about' }" :aria-current="view === 'about' ? 'page' : undefined" @click="setView('about')">
-                    {{ t('nav.about') }}
-                </button>
                 <div class="app__tools">
                     <TaoSegmented :model-value="locale" :legend="t('app.language')" size="small" @update:model-value="setLanguage">
                         <TaoSegmentedOption value="en">EN</TaoSegmentedOption>
@@ -104,6 +101,7 @@ onMounted(() => {
         </main>
 
         <footer class="app__footer">
+            <button type="button" class="app__about" :aria-current="view === 'about' ? 'page' : undefined" @click="setView('about')">{{ t('nav.about') }}</button>
             <a href="https://666.io" target="_blank" rel="noopener">666.io</a>
         </footer>
     </div>
@@ -167,33 +165,6 @@ onMounted(() => {
     outline: 2px solid var(--tao-color-accent);
     outline-offset: 1px;
 }
-.app__tab {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tao-control-height);
-    padding: 0 12px;
-    border: 0;
-    border-radius: var(--tao-radius-control);
-    background: transparent;
-    color: var(--tao-color-text-muted);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    cursor: pointer;
-}
-.app__tab:hover {
-    background: var(--tao-color-surface-hover);
-    color: var(--tao-color-text);
-}
-.app__tab.active {
-    background: var(--tao-color-surface-sunken);
-    color: var(--tao-color-accent);
-}
-.app__tab:focus-visible {
-    outline: 2px solid var(--tao-color-accent);
-    outline-offset: 1px;
-}
 @media (max-width: 520px) {
     .app__bar {
         padding: 8px;
@@ -220,9 +191,29 @@ onMounted(() => {
     margin-top: var(--tao-space-10);
     padding-top: var(--tao-space-6);
     border-top: 1px solid var(--tao-color-border);
-    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--tao-space-2) var(--tao-space-6);
     font-size: 14px;
     color: var(--tao-color-text-muted);
+}
+.app__about {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--tao-color-text);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.app__about:hover,
+.app__about[aria-current='page'] {
+    color: var(--tao-color-accent);
+}
+.app__about:focus-visible {
+    outline: 2px solid var(--tao-color-accent);
+    outline-offset: 2px;
 }
 .app__footer a {
     color: var(--tao-color-text);

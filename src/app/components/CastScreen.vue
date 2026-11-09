@@ -100,7 +100,6 @@ const status = computed(() => {
         <div class="cast__question">
             <label for="cast-question" class="cast__label">{{ t('cast.questionLabel') }}</label>
             <TaoTextarea id="cast-question" v-model="question" :rows="2" :maxlength="300" :placeholder="t('cast.questionPlaceholder')" />
-            <small class="cast__hint">{{ t('cast.questionHint') }}</small>
         </div>
 
         <div class="cast__stage">
@@ -123,9 +122,9 @@ const status = computed(() => {
         </div>
 
         <div class="cast__actions">
-            <TaoButton v-if="!done" variant="primary" :disabled="busy" @click="throwOne()">{{ t('cast.throw') }}</TaoButton>
-            <TaoButton v-else variant="primary" @click="emit('read')">{{ t('cast.read') }}</TaoButton>
-            <TaoButton v-if="!done" variant="secondary" :disabled="busy" @click="throwAll()">{{ t('cast.throwAll') }}</TaoButton>
+            <!-- the coins are thrown by a press on the table or the space bar, so there is no button for one throw -->
+            <TaoButton v-if="done" variant="primary" @click="emit('read')">{{ t('cast.read') }}</TaoButton>
+            <TaoButton v-else variant="secondary" :disabled="busy" @click="throwAll()">{{ t('cast.throwAll') }}</TaoButton>
             <TaoButton v-if="throws.length" variant="ghost" tone="neutral" @click="void startOver()">{{ t('cast.reset') }}</TaoButton>
         </div>
     </section>
@@ -142,9 +141,6 @@ const status = computed(() => {
 }
 .cast__label {
     color: var(--tao-color-text);
-}
-.cast__hint {
-    color: var(--tao-color-text-muted);
 }
 .cast__stage {
     display: grid;
