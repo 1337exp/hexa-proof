@@ -113,7 +113,7 @@ const status = computed(() => {
 
             <div class="cast__info">
                 <div class="cast__figure">
-                    <HexagramFigure :values="values" :highlight="busy ? 0 : revealed" :width="120" :label="t('cast.figure')" />
+                    <HexagramFigure :values="values" :highlight="busy ? 0 : revealed" animate :width="120" :label="t('cast.figure')" />
                 </div>
                 <div class="cast__text" aria-live="polite">
                     <p class="cast__thrown">{{ last ? t('cast.justThrown', [revealed, t(`cast.line.v${last.value}`)]) : t('cast.hintStart') }}</p>

@@ -32,7 +32,7 @@ const URLS: Record<Name, string> = {
     taiko: new URL('../assets/sound/taiko.mp3', import.meta.url).href,
 };
 /** How loud each one is, 0…1. / Громкость каждого, от 0 до 1. */
-const VOLUME: Record<Name, number> = { flip: 0.05, taiko: 0.4 };
+const VOLUME: Record<Name, number> = { flip: 0.04, taiko: 0.25 };
 const SAMPLE_RATE = 44100;
 
 let context: AudioContext | null = null;
