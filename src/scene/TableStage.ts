@@ -28,9 +28,10 @@ import {
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { Coin, Coins } from '../core/cast';
 import { createCoinGeometry } from './coinGeometry';
-import coinUrl from './assets/coin.webp';
+import coinBackUrl from './assets/coin_back.webp';
+import coinFrontUrl from './assets/coin_front.webp';
 import tableUrl from './assets/table.webp';
-import { rimTexture, ringTexture } from './textures';
+import { coinFaceTexture, rimTexture, ringTexture } from './textures';
 import { COIN_THICKNESS, flatQuaternion, newPose, planToss, upSide, yawOf, type CoinPose, type TossPlan } from './tossPlan';
 
 /**
@@ -185,21 +186,18 @@ export class TableStage {
         });
 
         const geometry = createCoinGeometry();
-        // One picture of a coin for both faces for now (the painted face, with the eight trigrams). It covers the square that holds the disc,
-        // so the geometry's UV (the plain x, y of the shape, from -R to R) are brought to 0..1.
-        // Пока одна картинка монеты на обе стороны. Она накрывает квадрат вокруг диска, поэтому UV геометрии приводятся к 0..1.
-        const coinMap = new TextureLoader().load(coinUrl, () => this.render());
-        coinMap.colorSpace = SRGBColorSpace;
-        coinMap.anisotropy = 8;
-        coinMap.repeat.set(0.5, 0.5);
-        coinMap.offset.set(0.5, 0.5);
+        // The two painted faces: the front (the animals and the good wishes) is the yang, the back (the eight trigrams) is the yin; the marks
+        // of the side are drawn over each. Swap the two urls to swap the sides.
+        // Две нарисованные стороны: лицевая (звери и добрые пожелания) это ян, оборотная (восемь триграмм) это инь; поверх каждой знак стороны.
+        const yinMap = coinFaceTexture(coinBackUrl, 2, () => this.render());
+        const yangMap = coinFaceTexture(coinFrontUrl, 3, () => this.render());
         const rimMap = rimTexture();
-        this.textures.push(coinMap, rimMap);
-        const face = () => new MeshStandardMaterial({ map: coinMap, bumpMap: coinMap, bumpScale: 1.6, metalness: 0.75, roughness: 0.5 });
+        this.textures.push(yinMap, yangMap, rimMap);
+        const face = (map: typeof yinMap) => new MeshStandardMaterial({ map, bumpMap: map, bumpScale: 1.6, metalness: 0.75, roughness: 0.5 });
         const rim = new MeshStandardMaterial({ map: rimMap, metalness: 0.85, roughness: 0.5 });
 
-        const yinFace = face();
-        const yangFace = face();
+        const yinFace = face(yinMap);
+        const yangFace = face(yangMap);
         for (let index = 0; index < THROWS * 3; index++) {
             const mesh = new Mesh(geometry, [yinFace, yangFace, rim]);
             mesh.castShadow = true;

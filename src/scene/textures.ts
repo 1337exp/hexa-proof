@@ -35,68 +35,50 @@ function texture(element: HTMLCanvasElement, repeat = false): CanvasTexture {
 }
 
 /**
- * One face of the coin. The texture covers the square that holds the disc (the shape goes from −1 to 1), so the marks sit where the geometry puts them.
- * Одна сторона монеты. Текстура накрывает квадрат вокруг диска (форма идёт от −1 до 1), так что знаки встают туда, куда их ставит геометрия.
+ * One face of the coin: the painted picture, and over it the marks that say which side it is: a solid bar for the yang, a broken one
+ * for the yin, above and below the hole. The picture is drawn when it has loaded (the texture is updated then, and `onReady` is called).
+ * The texture covers the square that holds the disc, so the marks sit where the geometry puts them.
+ * Одна сторона монеты: нарисованная картинка и поверх неё знак стороны: сплошная черта для ян, прерывистая для инь, над отверстием и под ним.
+ * Картинка дорисовывается, когда загрузится. Текстура накрывает квадрат вокруг диска, так что знаки встают туда, куда их ставит геометрия.
  */
-export function coinFaceTexture(side: Coin): CanvasTexture {
-    const size = 512;
+export function coinFaceTexture(url: string, side: Coin, onReady?: () => void): CanvasTexture {
+    const size = 1024;
     const [element, g] = canvas(size);
-    const random = noise(side === 3 ? 31 : 22);
-
-    const metal = g.createRadialGradient(size * 0.4, size * 0.34, size * 0.05, size / 2, size / 2, size * 0.55);
-    metal.addColorStop(0, '#e0a971');
-    metal.addColorStop(0.55, '#b87333');
-    metal.addColorStop(1, '#7a4a1d');
-    g.fillStyle = metal;
+    g.fillStyle = '#4a3a24';
     g.fillRect(0, 0, size, size);
-
-    // patina and wear: soft dark and green-grey blotches, then fine grain
-    for (let i = 0; i < 260; i++) {
-        const x = random() * size;
-        const y = random() * size;
-        const r = 4 + random() * 26;
-        const spot = g.createRadialGradient(x, y, 0, x, y, r);
-        const green = random() < 0.25;
-        spot.addColorStop(0, green ? 'rgba(70,110,92,0.16)' : 'rgba(40,20,8,0.17)');
-        spot.addColorStop(1, 'rgba(0,0,0,0)');
-        g.fillStyle = spot;
-        g.fillRect(x - r, y - r, r * 2, r * 2);
-    }
-    for (let i = 0; i < 9000; i++) {
-        g.fillStyle = random() < 0.5 ? 'rgba(255,225,180,0.07)' : 'rgba(30,14,4,0.09)';
-        g.fillRect(random() * size, random() * size, 1.5, 1.5);
-    }
-
-    // the raised rim, a ring just inside the edge
-    const c = size / 2;
-    g.lineWidth = size * 0.026;
-    g.strokeStyle = 'rgba(70,38,12,0.75)';
-    g.beginPath();
-    g.arc(c, c, size * 0.43, 0, Math.PI * 2);
-    g.stroke();
-    g.lineWidth = size * 0.01;
-    g.strokeStyle = 'rgba(240,200,150,0.35)';
-    g.beginPath();
-    g.arc(c, c, size * 0.452, 0, Math.PI * 2);
-    g.stroke();
-
-    // the marks: a solid bar for the yang, a broken one for the yin, above and below the hole
-    g.fillStyle = 'rgba(58,30,10,0.9)';
-    const barH = size * 0.05;
-    const half = size * 0.19;
-    for (const y of [size * 0.215, size * 0.785]) {
-        if (side === 3) g.fillRect(c - half, y - barH / 2, half * 2, barH);
-        else {
-            g.fillRect(c - half, y - barH / 2, half * 0.82, barH);
-            g.fillRect(c + half * 0.18, y - barH / 2, half * 0.82, barH);
-        }
-    }
-
     const result = texture(element);
     // the geometry's UV are the plain x, y of the shape, from −R to R
     result.repeat.set(0.5, 0.5);
     result.offset.set(0.5, 0.5);
+
+    const image = new Image();
+    image.onload = () => {
+        g.drawImage(image, 0, 0, size, size);
+        drawMarks(g, size, side);
+        result.needsUpdate = true;
+        onReady?.();
+    };
+    image.src = url;
     return result;
+}
+
+/** The marks of a side, drawn big and dark on a light edge, so that they can be read from the far end of the table. / Знаки стороны, крупные и тёмные на светлой кайме, чтобы читались с дальнего края стола. */
+function drawMarks(g: CanvasRenderingContext2D, size: number, side: Coin): void {
+    const c = size / 2;
+    const barH = size * 0.085;
+    const half = size * 0.25;
+    for (const y of [size * 0.19, size * 0.81]) {
+        const pieces: [number, number][] = side === 3 ? [[c - half, half * 2]] : [[c - half, half * 0.84], [c + half * 0.16, half * 0.84]];
+        for (const [x, w] of pieces) {
+            g.fillStyle = 'rgba(14,8,3,0.88)';
+            g.strokeStyle = 'rgba(244,206,140,0.95)';
+            g.lineWidth = size * 0.01;
+            g.beginPath();
+            g.roundRect(x, y - barH / 2, w, barH, barH * 0.25);
+            g.fill();
+            g.stroke();
+        }
+    }
 }
 
 /** The rim of the coin and its bump: a darker, rougher metal. / Ребро монеты: более тёмный и грубый металл. */
