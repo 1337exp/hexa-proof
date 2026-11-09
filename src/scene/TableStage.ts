@@ -2,7 +2,7 @@ import { startLoop, type Loop } from '@1337exp/pkt-threejs-blueprint/loop';
 import { bindResize, createRenderer } from '@1337exp/pkt-threejs-blueprint/renderer';
 import { disposeObject } from '@1337exp/pkt-threejs-blueprint/dispose';
 import {
-    ACESFilmicToneMapping,
+    NoToneMapping,
     AdditiveBlending,
     AmbientLight,
     Color,
@@ -21,11 +21,16 @@ import {
     SRGBColorSpace,
     TextureLoader,
     SpotLight,
+    Vector2,
     Vector3,
     type Texture,
     type WebGLRenderer,
 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import type { Coin, Coins } from '../core/cast';
 import { createCoinGeometry } from './coinGeometry';
 import coinBackUrl from './assets/coin_back.webp';
@@ -83,6 +88,10 @@ interface CoinState {
     /** Where the coin goes after the hit, and the slide on the way. / Куда монета идёт после удара, и сам сдвиг. */
     park: Vector3 | null;
     slide: Slide | null;
+    /** The faces of this coin: their glow is its own. / Стороны этой монеты: свечение у каждой своё. */
+    faces: MeshStandardMaterial[];
+    /** When the wave of glow reaches this coin, in seconds from its start. / Когда до этой монеты доходит волна свечения. */
+    glowDelay: number;
     /** The coin grows out of nothing in the first moments, so that it does not pop into view. / Монета вырастает из нуля, чтобы не возникать рывком. */
     appear: number;
 }
@@ -120,19 +129,31 @@ export class TableStage {
     private flashLevel = 0;
     private ringMap!: Texture;
     private backdrop: Texture | null = null;
+    private composer!: EffectComposer;
+    private bloom!: UnrealBloomPass;
+    /** The wave of glow that runs over the coins when the sixth line is down: seconds since it began, or −1. / Волна свечения: секунды от начала или −1. */
+    private glowTime = -1;
+    private skipGlow = false;
     private aspect = 1.8;
     private readonly waves: { mesh: Mesh<PlaneGeometry, MeshBasicMaterial>; age: number; strength: number }[] = [];
 
     constructor(container: HTMLElement, options: TableStageOptions = {}) {
         this.renderer = createRenderer(container, { antialias: true });
-        this.renderer.toneMapping = ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 0.95;
+        this.renderer.toneMapping = NoToneMapping; // the picture of the table must keep its colours; the bloom pass tone-maps the whole frame
+        this.renderer.toneMappingExposure = 1;
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = PCFSoftShadowMap;
         this.renderer.domElement.style.width = '100%';
         this.renderer.domElement.style.height = '100%';
 
         this.buildScene();
+        // the glow: a bloom that is switched on only while the wave runs over the coins
+        this.composer = new EffectComposer(this.renderer);
+        this.composer.addPass(new RenderPass(this.scene, this.camera));
+        this.bloom = new UnrealBloomPass(new Vector2(256, 256), 0, 0.85, 0.35);
+        this.bloom.enabled = false;
+        this.composer.addPass(this.bloom);
+        this.composer.addPass(new OutputPass());
         this.unbind = bindResize(this.renderer, container, (width, height) => this.layout(width, height), { updateStyle: false });
         if (options.onActivate) this.renderer.domElement.addEventListener('pointerdown', options.onActivate);
 
@@ -193,18 +214,19 @@ export class TableStage {
         const yangMap = coinFaceTexture(coinFrontUrl, 3, () => this.render());
         const rimMap = rimTexture();
         this.textures.push(yinMap, yangMap, rimMap);
-        const face = (map: typeof yinMap) => new MeshStandardMaterial({ map, bumpMap: map, bumpScale: 1.6, metalness: 0.75, roughness: 0.5 });
+        // the engraving itself glows: the picture is also the map of the light the metal gives
+        const face = (map: typeof yinMap) => new MeshStandardMaterial({ map, bumpMap: map, bumpScale: 1.6, metalness: 0.75, roughness: 0.5, emissive: new Color('#ffa850'), emissiveMap: map, emissiveIntensity: 0 });
         const rim = new MeshStandardMaterial({ map: rimMap, metalness: 0.85, roughness: 0.5 });
 
-        const yinFace = face(yinMap);
-        const yangFace = face(yangMap);
         for (let index = 0; index < THROWS * 3; index++) {
+            const yinFace = face(yinMap);
+            const yangFace = face(yangMap);
             const mesh = new Mesh(geometry, [yinFace, yangFace, rim]);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
             mesh.visible = false;
             scene.add(mesh);
-            this.coins.push({ mesh, side: 3, yaw: 0, plan: null, time: 0, pose: newPose(), park: null, slide: null, appear: 1 });
+            this.coins.push({ mesh, side: 3, yaw: 0, plan: null, time: 0, pose: newPose(), park: null, slide: null, appear: 1, faces: [yinFace, yangFace], glowDelay: 0 });
         }
     }
 
@@ -230,6 +252,37 @@ export class TableStage {
         this.shake = Math.max(this.shake, strength);
         this.flash.position.set(at.x, 1.1, at.z);
         this.flashLevel = Math.max(this.flashLevel, strength);
+    }
+
+    /**
+     * The wave of glow: it runs over the coins from the left to the right, each one flares and goes out, and the bloom follows the brightest.
+     * Волна свечения: бежит по монетам слева направо, каждая вспыхивает и гаснет, а bloom идёт за самой яркой.
+     */
+    private startGlow(): void {
+        const xs = this.coins.map((state) => state.mesh.position.x);
+        const left = Math.min(...xs);
+        const span = Math.max(...xs) - left || 1;
+        for (const state of this.coins) state.glowDelay = ((state.mesh.position.x - left) / span) * 0.95;
+        this.glowTime = 0;
+    }
+
+    private animateGlow(dt: number): void {
+        if (this.glowTime < 0) return;
+        const PULSE = 0.75;
+        this.glowTime += dt;
+        let level = 0;
+        for (const state of this.coins) {
+            const t = this.glowTime - state.glowDelay;
+            const pulse = t > 0 && t < PULSE ? Math.sin((Math.PI * t) / PULSE) ** 2 : 0;
+            level = Math.max(level, pulse);
+            for (const face of state.faces) face.emissiveIntensity = pulse * 5;
+        }
+        this.bloom.strength = level * 1.8;
+        this.bloom.enabled = level > 0.01;
+        if (this.glowTime > 0.95 + PULSE + 0.05) {
+            this.glowTime = -1;
+            this.bloom.enabled = false;
+        }
     }
 
     /** Runs the rings, the flash and the shake by `dt`. / Двигает кольца, вспышку и дрожь на `dt`. */
@@ -266,6 +319,8 @@ export class TableStage {
         this.camera.position.copy(this.cameraBase);
         this.camera.lookAt(this.target);
         this.camera.updateProjectionMatrix();
+        this.composer.setPixelRatio(this.renderer.getPixelRatio());
+        this.composer.setSize(width, height);
         this.fitBackground();
         this.render();
     }
@@ -299,6 +354,7 @@ export class TableStage {
         const index = this.throwIndex++;
         const group = this.coins.slice(index * 3, index * 3 + 3);
         this.latest = group;
+        this.skipGlow = Boolean(options.instant);
         return new Promise((resolve) => {
             this.pending = { resolve };
             group.forEach((state, k) => {
@@ -360,6 +416,8 @@ export class TableStage {
         if (this.coins.some((state) => state.plan || state.slide)) return;
         const done = this.pending;
         this.pending = null;
+        // the sixth line is down: the whole hexagram lies on the table, and a wave of light runs over it
+        if (done && this.throwIndex >= THROWS && !this.skipGlow) this.startGlow();
         done?.resolve();
     }
 
@@ -382,6 +440,9 @@ export class TableStage {
         }
         this.throwIndex = 0;
         this.latest = [];
+        this.glowTime = -1;
+        this.bloom.enabled = false;
+        for (const state of this.coins) for (const face of state.faces) face.emissiveIntensity = 0;
     }
 
     /** Advances the time by `dt` seconds and draws a frame. The loop calls it; the laboratory calls it by hand to step frame by frame. / Двигает время на `dt` и рисует кадр. */
@@ -422,6 +483,7 @@ export class TableStage {
             state.mesh.scale.copy(state.pose.scale).multiplyScalar(state.appear);
         }
         this.animateEffects(dt);
+        this.animateGlow(scaled);
         if (this.pending) this.completeIfStill();
         this.render();
     }
@@ -433,13 +495,14 @@ export class TableStage {
             this.camera.position.x += (Math.random() - 0.5) * a;
             this.camera.position.y += (Math.random() - 0.5) * a;
         }
-        this.renderer.render(this.scene, this.camera);
+        this.composer.render();
     }
 
     dispose(): void {
         this.loop.stop();
         this.unbind();
         this.finish();
+        this.composer.dispose();
         disposeObject(this.scene);
         for (const texture of this.textures) texture.dispose();
         this.renderer.dispose();
