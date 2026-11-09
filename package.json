@@ -1,0 +1,35 @@
+{
+  "name": "hexa-proof",
+  "version": "0.0.0",
+  "private": true,
+  "description": "I Ching oracle with a lacquer table and bronze coins. Cast a hexagram, read the classic text in Russian (Shchutsky) or English (Legge).",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.core.json && vue-tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "texts": "node scripts/build-ru.mjs && node scripts/build-en.mjs",
+    "screenshot": "node scripts/screenshot.mjs"
+  },
+  "dependencies": {
+    "@1337exp/pkt-threejs-blueprint": "^0.1.0",
+    "@1337exp/taoui": "^5.32.0",
+    "@1337exp/taoux": "^0.10.0",
+    "three": "^0.187.0",
+    "vue": "^3.5.45"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "@types/three": "^0.187.0",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "playwright-core": "^1.65.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0",
+    "vue-tsc": "^3.3.14"
+  }
+}

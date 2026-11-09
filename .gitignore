@@ -1,0 +1,18 @@
+node_modules
+dist
+*.local
+.DS_Store
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Raw source books and downloaded pages: only the built text packs in src/data/texts are committed
+# Сырые книги и скачанные страницы: коммитятся только готовые пакеты текстов в src/data/texts
+sources/
+
+# IDE and local settings
+.idea
+.claude/*
+!.claude/skills/

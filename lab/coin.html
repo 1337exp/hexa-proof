@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lab: the toss of the coins</title>
+        <style>
+            body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: #141110; color: #cfc6bd; }
+            main { max-width: 900px; margin: 0 auto; padding: 16px; display: grid; gap: 12px; }
+            #stage { height: 380px; border-radius: 8px; overflow: hidden; }
+            .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+            button, select { font: inherit; padding: 4px 10px; }
+            output { font-family: ui-monospace, monospace; }
+            table { border-collapse: collapse; }
+            td, th { border: 1px solid #3a322c; padding: 2px 8px; }
+            .ok { color: #7fd08a; } .bad { color: #ff7b72; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>The toss of the coins</h1>
+            <p>
+                The sides are chosen first, then the coins are thrown and led to them. The verdict is read from what the scene shows (the
+                orientation of every mesh), not from the plan. Not part of the build.
+            </p>
+            <div id="stage"></div>
+            <div class="row">
+                <label>Coin 1 <select id="c0"><option value="3">yang (3)</option><option value="2">yin (2)</option></select></label>
+                <label>Coin 2 <select id="c1"><option value="3">yang (3)</option><option value="2">yin (2)</option></select></label>
+                <label>Coin 3 <select id="c2"><option value="3">yang (3)</option><option value="2">yin (2)</option></select></label>
+                <button id="toss">Toss</button>
+                <button id="reset">Reset</button>
+            </div>
+            <div class="row">
+                <label>Speed <input id="speed" type="range" min="0" max="2" step="0.05" value="1" /> <output id="speedOut">1</output></label>
+                <button id="frame">One frame (1/60 s)</button>
+                <label>Turns <input id="turns" type="number" min="0.5" max="8" step="0.5" value="2" style="width: 4em" /></label>
+                <label>Slow <button id="slow">0.1×</button></label>
+                <button id="all">Check all 8 combinations, 3 times each</button>
+            </div>
+            <p id="verdict">Waiting.</p>
+            <table id="results"></table>
+        </main>
+        <script type="module" src="./coin.ts"></script>
+    </body>
+</html>

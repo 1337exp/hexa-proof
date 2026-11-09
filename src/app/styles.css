@@ -1,0 +1,31 @@
+/*
+ * The palette of the table and the coins: bronze on dark lacquer. Everything else comes from the TaoUI tokens.
+ * Палитра стола и монет: бронза на тёмном лаке. Всё остальное берётся из токенов TaoUI.
+ */
+:root {
+    --hx-bronze-light: #d9a066;
+    --hx-bronze: #b87333;
+    --hx-bronze-dark: #6e4318;
+    --hx-hole: #17110c;
+    --hx-table: radial-gradient(ellipse at 50% 30%, #2a1d16 0%, #160f0b 70%);
+    --hx-serif: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, 'Noto Serif', serif;
+}
+
+:root[data-tao-mode='light'] {
+    --hx-bronze-light: #9a5b1c;
+    --hx-bronze: #a8601f;
+    --hx-bronze-dark: #5c3512;
+    --hx-hole: #f1e6d6;
+    --hx-table: radial-gradient(ellipse at 50% 30%, #f0e3cf 0%, #dcc9ad 80%);
+}
+
+body {
+    margin: 0;
+    background: var(--tao-color-bg);
+    color: var(--tao-color-text);
+    font-family: var(--tao-font-family);
+}
+
+* {
+    box-sizing: border-box;
+}
