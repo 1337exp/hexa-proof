@@ -25,7 +25,7 @@ const URLS: Record<Name, string> = {
     taiko: new URL('../assets/sound/taiko.mp3', import.meta.url).href,
 };
 /** How loud each one is, 0…1. / Громкость каждого, от 0 до 1. */
-const VOLUME: Record<Name, number> = { flip: 0.2, taiko: 0.7 };
+const VOLUME: Record<Name, number> = { flip: 0.05, taiko: 0.4 };
 
 let context: AudioContext | null = null;
 const fetched = new Map<Name, Promise<ArrayBuffer | null>>();

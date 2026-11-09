@@ -238,6 +238,7 @@ export class TableStage {
     private listenForTap(element: HTMLElement, onTap: () => void): void {
         const SLOP = 10; // px
         const LONGEST = 600; // ms
+        // TODO: when @1337exp/pkt-threejs-blueprint 0.1.1 is published, pass `{ touchAction: 'pan-y' }` to createRenderer instead of this line.
         element.style.touchAction = 'pan-y';
         let start: { id: number; x: number; y: number; at: number; moved: boolean } | null = null;
         element.addEventListener('pointerdown', (event) => {

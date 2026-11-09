@@ -42,7 +42,9 @@ function texture(element: HTMLCanvasElement, repeat = false): CanvasTexture {
  * Картинка дорисовывается, когда загрузится. Текстура накрывает квадрат вокруг диска, так что знаки встают туда, куда их ставит геометрия.
  */
 export function coinFaceTexture(url: string, side: Coin, onReady?: () => void): CanvasTexture {
-    const size = 1024;
+    // The coins are small on the screen: the picture is 128 px and the canvas 256 px, which the eye does not tell from more; the marks are drawn
+    // on the canvas itself, so they stay sharp. / Монеты на экране мелкие: картинка 128 px, холст 256 px, глаз большего не отличит; знаки рисуются на самом холсте и остаются чёткими.
+    const size = 256;
     const [element, g] = canvas(size);
     g.fillStyle = '#4a3a24';
     g.fillRect(0, 0, size, size);
