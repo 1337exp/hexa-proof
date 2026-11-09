@@ -9,13 +9,10 @@ import ReadingView from './components/ReadingView.vue';
 import { i18n, locale, t } from './i18n';
 import { addEntry, entries, removeEntry, startJournal } from './journal';
 import { cast, question, readingMode, reset, setReadingMode } from './session';
-import { view } from './nav';
+import { answer as reading, setAnswer, showView, view, type View } from './nav';
 import { startPackLoading } from './texts';
 import { computed } from 'vue';
 
-type View = 'cast' | 'journal' | 'library' | 'about';
-
-const reading = ref(false);
 
 /** The three working sections are the tiles; the book is a quiet link in the top row. / Три рабочих раздела это плитки; книга это тихая ссылка в верхнем ряду. */
 const tiles = computed(() => [
@@ -25,7 +22,7 @@ const tiles = computed(() => [
 ]);
 
 function setView(value: string): void {
-    view.value = value as View;
+    showView(value as View);
 }
 
 function setLanguage(value: string | number | boolean): void {
@@ -46,14 +43,14 @@ function save(): void {
 
 /** Reading the answer saves it: people do not scroll down to press «save». / Прочесть ответ значит сохранить его: до кнопки «сохранить» не доматывают. */
 function read(): void {
-    reading.value = true;
+    setAnswer(true);
     save();
 }
 
 function startOver(): void {
     savedId.value = null;
     reset();
-    reading.value = false;
+    setAnswer(false);
 }
 
 async function remove(): Promise<void> {

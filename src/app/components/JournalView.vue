@@ -7,12 +7,12 @@ import { primaryOf, relatingOf } from '../../core/hexagram';
 import { MAX_NOTE } from '../../core/journal';
 import { clearEntries, exportJournal, entries, importJournal, removeEntry, setNote } from '../journal';
 import { locale, t } from '../i18n';
+import { entry as openId, setEntry } from '../nav';
 import { readingMode, setReadingMode } from '../session';
 import { textOf } from '../texts';
 import HexagramFigure from './HexagramFigure.vue';
 import ReadingView from './ReadingView.vue';
 
-const openId = ref<string | null>(null);
 /** The row that is swiped open, if any. / Ряд, открытый свайпом. */
 const swiped = ref<string | null>(null);
 const picker = ref<HTMLInputElement | null>(null);
@@ -35,7 +35,7 @@ async function remove(id: string): Promise<void> {
     swiped.value = null; // the row closes whatever the answer was
     if (!sure) return;
     removeEntry(id);
-    openId.value = null;
+    setEntry(null);
 }
 
 async function clear(): Promise<void> {
@@ -74,7 +74,7 @@ async function onPick(event: Event): Promise<void> {
                     @action="void remove(entry.id)"
                 >
                     <div class="journal__row">
-                        <button type="button" class="journal__item" @click="openId = entry.id">
+                        <button type="button" class="journal__item" @click="setEntry(entry.id)">
                             <HexagramFigure :values="entry.cast" :width="56" />
                             <span class="journal__body">
                                 <span class="journal__name">{{ title(entry.cast) }}</span>
@@ -93,7 +93,7 @@ async function onPick(event: Event): Promise<void> {
 
     <section v-else class="journal journal--open">
         <div class="journal__bar">
-            <TaoButton variant="ghost" tone="neutral" @click="openId = null">← {{ t('journal.back') }}</TaoButton>
+            <TaoButton variant="ghost" tone="neutral" @click="setEntry(null)">← {{ t('journal.back') }}</TaoButton>
             <small class="journal__date">{{ formatDate(current.date) }}</small>
         </div>
 
